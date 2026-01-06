@@ -1,3 +1,21 @@
+from fastapi import FastAPI
+import requests
+
+app = FastAPI()
+
+# optional root route
+@app.get("/")
+def root():
+    return {"message": "Dhruv Stock Forecast API is running"}
+
+# market bias route (already working)
+@app.get("/market-bias")
+def market_bias():
+    nifty = fetch_nifty_data()
+    # existing logic
+    return {...}
+
+# 🔽 SUPPORT & RESISTANCE MUST BE BELOW app = FastAPI()
 @app.get("/support-resistance")
 def support_resistance():
     nifty = fetch_nifty_data()
