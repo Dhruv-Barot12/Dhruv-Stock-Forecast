@@ -5,10 +5,11 @@ from fastapi.responses import FileResponse
 import yfinance as yf
 from datetime import datetime
 import os
-from openai import OpenAI
+import requests
 
 app = FastAPI()
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,64 +17,97 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve frontend
 app.mount("/static", StaticFiles(directory="Frontend"), name="static")
 
 @app.get("/")
 def home():
     return FileResponse("Frontend/index.html")
 
-def get_nifty():
+# ---------------- DATA ---------------- #
+
+def get_nifty_data():
     ticker = yf.Ticker("^NSEI")
     hist = ticker.history(period="1d")
-    today = hist.iloc[-1]
-    spot = round(today["Close"], 2)
+
+    if hist.empty:
+        raise HTTPException(status_code=500, detail="No Nifty data")
+
+    row = hist.iloc[-1]
+    spot = round(row["Close"], 2)
+
     return {
         "spot": spot,
-        "high": round(today["High"], 2),
-        "low": round(today["Low"], 2),
-        "atm": round(spot / 50) * 50,
-        "time": datetime.now().strftime("%d %b %Y %I:%M %p")
+        "day_high": round(row["High"], 2),
+        "day_low": round(row["Low"], 2),
+        "atm_strike": round(spot / 50) * 50,
+        "timestamp": datetime.now().strftime("%d %b %Y, %I:%M %p IST"),
     }
+
+# ---------------- ROUTES ---------------- #
 
 @app.get("/support-resistance")
 def support_resistance():
-    d = get_nifty()
+    data = get_nifty_data()
     return {
-        "spot": d["spot"],
-        "support": d["low"],
-        "resistance": d["high"],
-        "logic": "Day low = support, day high = resistance",
-        "disclaimer": "Educational only"
+        "spot": data["spot"],
+        "support": data["day_low"],
+        "resistance": data["day_high"],
+        "logic": "Day low as support, day high as resistance",
+        "validity": "Intraday",
+        "disclaimer": "Educational only",
     }
 
 @app.get("/generate-report")
 def generate_report():
-    d = get_nifty()
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        return {"success": False, "error": "GROQ_API_KEY not set"}
+        raise HTTPException(status_code=500, detail="GROQ_API_KEY missing")
 
-    client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
+    data = get_nifty_data()
 
     prompt = f"""
-Nifty Intraday Analysis
-Spot: {d['spot']}
-ATM: {d['atm']}
-High: {d['high']}
-Low: {d['low']}
-Give strategy (Call/Put), probability, and risk.
+Nifty 50 Intraday Analysis
+
+Spot: {data['spot']}
+ATM Strike: {data['atm_strike']}
+Day High: {data['day_high']}
+Day Low: {data['day_low']}
+
+Give:
+1. Direction probability (%)
+2. Call or Put recommendation
+3. Risk & reward
+4. Short actionable summary
 """
 
-    r = client.chat.completions.create(
-        model="llama-3.1-70b-versatile",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=500
+    response = requests.post(
+        "https://api.groq.com/openai/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "llama3-70b-8192",
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.6,
+            "max_tokens": 500,
+        },
+        timeout=30,
     )
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Groq API failed: {response.text}",
+        )
+
+    report = response.json()["choices"][0]["message"]["content"]
 
     return {
         "success": True,
-        "spot": d["spot"],
-        "atm_strike": d["atm"],
-        "report": r.choices[0].message.content,
-        "generated_at": d["time"]
+        "spot": data["spot"],
+        "atm_strike": data["atm_strike"],
+        "report": report,
+        "generated_at": data["timestamp"],
     }
