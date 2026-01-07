@@ -9,7 +9,7 @@ import requests
 
 app = FastAPI()
 
-# CORS
+# ---------------- CORS ----------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,65 +17,67 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve frontend
+# ------------- FRONTEND ---------------
 app.mount("/static", StaticFiles(directory="Frontend"), name="static")
 
 @app.get("/")
 def home():
     return FileResponse("Frontend/index.html")
 
-# ---------------- DATA ---------------- #
+# ------------- DATA --------------------
 
 def get_nifty_data():
     ticker = yf.Ticker("^NSEI")
     hist = ticker.history(period="1d")
 
     if hist.empty:
-        raise HTTPException(status_code=500, detail="No Nifty data")
+        raise HTTPException(status_code=500, detail="No Nifty data available")
 
     row = hist.iloc[-1]
     spot = round(row["Close"], 2)
 
     return {
         "spot": spot,
-        "day_high": round(row["High"], 2),
-        "day_low": round(row["Low"], 2),
-        "atm_strike": round(spot / 50) * 50,
-        "timestamp": datetime.now().strftime("%d %b %Y, %I:%M %p IST"),
+        "high": round(row["High"], 2),
+        "low": round(row["Low"], 2),
+        "atm": round(spot / 50) * 50,
+        "time": datetime.now().strftime("%d %b %Y, %I:%M %p IST"),
     }
 
-# ---------------- ROUTES ---------------- #
+# -------- SUPPORT / RESISTANCE ---------
 
 @app.get("/support-resistance")
 def support_resistance():
-    data = get_nifty_data()
+    d = get_nifty_data()
     return {
-        "spot": data["spot"],
-        "support": data["day_low"],
-        "resistance": data["day_high"],
-        "logic": "Day low as support, day high as resistance",
+        "spot": d["spot"],
+        "support": d["low"],
+        "resistance": d["high"],
+        "logic": "Day low used as support and day high as resistance",
         "validity": "Intraday",
-        "disclaimer": "Educational only",
+        "disclaimer": "Educational purposes only",
     }
+
+# -------- AI INTRADAY REPORT ------------
 
 @app.get("/generate-report")
 def generate_report():
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="GROQ_API_KEY missing")
+        raise HTTPException(status_code=500, detail="GROQ_API_KEY not set")
 
-    data = get_nifty_data()
+    d = get_nifty_data()
 
     prompt = f"""
-Nifty 50 Intraday Analysis
+NIFTY 50 INTRADAY ANALYSIS
 
-Spot: {data['spot']}
-ATM Strike: {data['atm_strike']}
-Day High: {data['day_high']}
-Day Low: {data['day_low']}
+Spot Price: {d['spot']}
+ATM Strike: {d['atm']}
+Day High: {d['high']}
+Day Low: {d['low']}
 
-Give:
-1. Direction probability (%)
+Provide:
+1. Direction probability (Bullish/Bearish/Sideways)
 2. Call or Put recommendation
 3. Risk & reward
 4. Short actionable summary
@@ -88,12 +90,11 @@ Give:
             "Content-Type": "application/json",
         },
         json={
-    "model": "llama-3.1-70b-versatile",
-    "messages": [{"role": "user", "content": prompt}],
-    "temperature": 0.6,
-    "max_tokens": 500,
-}
-,
+            "model": "llama-3.1-8b-instant",   # ✅ CURRENT SUPPORTED MODEL
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.6,
+            "max_tokens": 500,
+        },
         timeout=30,
     )
 
@@ -107,8 +108,8 @@ Give:
 
     return {
         "success": True,
-        "spot": data["spot"],
-        "atm_strike": data["atm_strike"],
+        "spot": d["spot"],
+        "atm_strike": d["atm"],
         "report": report,
-        "generated_at": data["timestamp"],
+        "generated_at": d["time"],
     }
