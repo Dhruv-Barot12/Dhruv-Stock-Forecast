@@ -1,5 +1,4 @@
 fastapi
 uvicorn[standard]
 requests
-openai  # Needed for Groq client (or direct calls)
-python-multipart
+openai
