@@ -23,7 +23,7 @@ app.mount("/static", StaticFiles(directory="Frontend"), name="static")
 def home():
     return FileResponse("Frontend/index.html")
 
-def fetch_nifty_data():
+def get_nifty_data():
     try:
         ticker = yf.Ticker("^NSEI")
         hist = ticker.history(period="2d")
@@ -34,25 +34,25 @@ def fetch_nifty_data():
         atm_strike = round(spot / 50) * 50
         return {
             "spot": spot,
-            "atm_strike": atm_strike,
             "day_high": day_high,
             "day_low": day_low,
+            "atm_strike": atm_strike,
             "timestamp": datetime.now().strftime("%d %b %Y, %I:%M %p IST")
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Data fetch failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Data error: {str(e)}")
 
 @app.get("/support-resistance")
 def support_resistance():
     try:
-        data = fetch_nifty_data()
+        data = get_nifty_data()
         return {
             "spot": data["spot"],
-            "support": round(data["day_low"], 2),
-            "resistance": round(data["day_high"], 2),
+            "support": data["day_low"],
+            "resistance": data["day_high"],
             "logic": "Day low as support, day high as resistance",
             "validity": "Intraday",
-            "disclaimer": "For educational purposes only"
+            "disclaimer": "Educational only"
         }
     except Exception as e:
         return {"error": str(e)}
@@ -60,7 +60,7 @@ def support_resistance():
 @app.get("/generate-report")
 def generate_report():
     try:
-        data = fetch_nifty_data()
+        data = get_nifty_data()
         spot = data["spot"]
         atm_strike = data["atm_strike"]
 
@@ -70,18 +70,16 @@ def generate_report():
 
         client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
 
-        prompt = f"""Expert Nifty 50 intraday analysis for 07 Jan 2026.
-Current Spot: {spot}
-ATM Strike: {atm_strike}
-Day High/Low: {data['day_high']}/{data['day_low']}
+        prompt = f"""Nifty 50 intraday analysis for 07 Jan 2026.
+Spot: {spot}
+ATM: {atm_strike}
+High/Low: {data['day_high']}/{data['day_low']}
 
-Provide:
-1. Intraday probabilities (% higher/lower/volatile)
-2. High-risk recommendation: Buy Calls or Puts
+Give:
+1. Probability (%): higher / lower / volatile
+2. Recommended strategy: Buy Calls or Puts
 3. Expected return & risks
-4. Actionable Summary (strategy, strike, premium approx, probability)
-
-Keep concise."""
+4. Actionable Summary"""
 
         response = client.chat.completions.create(
             model="llama-3.1-70b-versatile",
@@ -99,4 +97,4 @@ Keep concise."""
             "generated_at": data["timestamp"]
         }
     except Exception as e:
-        return {"error": f"Report failed: {str(e)}"}
+        return {"error": f"AI failed: {str(e)}"}
