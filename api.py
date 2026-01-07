@@ -1,13 +1,15 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import requests
 import os
 from datetime import datetime
-from openai import OpenAI  # pip install openai
+from openai import OpenAI
 
-app = FastAPI(title="Dhruv Stock Forecast API")
+app = FastAPI(title="Dhruv Stock Forecast")
 
-# Allow frontend to call API (important for Render + localhost)
+# CORS - Allow your frontend to call the API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,9 +18,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Groq client (free tier)
+# Serve the Frontend folder (so index.html loads at root URL)
+app.mount("/static", StaticFiles(directory="Frontend"), name="static")
+
+# Root route - serves your index.html
+@app.get("/")
+def read_root():
+    return FileResponse("Frontend/index.html")
+
+# Groq API client (free)
 groq_client = OpenAI(
-    api_key=os.getenv("GROQ_API_KEY"),  # Set this in Render Environment Variables
+    api_key=os.getenv("GROQ_API_KEY"),  # You will set this in Render
     base_url="https://api.groq.com/openai/v1"
 )
 
@@ -29,8 +39,9 @@ def fetch_nifty_option_chain():
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36",
             "Referer": "https://www.nseindia.com/option-chain",
             "Accept": "application/json",
+            "Accept-Language": "en-US,en;q=0.9",
         })
-        # Get cookies first
+        # Get cookies
         session.get("https://www.nseindia.com/", timeout=10)
 
         url = "https://www.nseindia.com/api/option-chain-indices?symbol=NIFTY"
@@ -41,24 +52,21 @@ def fetch_nifty_option_chain():
         spot = round(data["records"]["underlyingValue"], 2)
         expiries = data["records"]["expiryDates"]
 
-        # Prefer January 2026 monthly expiry, fallback to nearest
+        # Try to find January 2026 expiry, fallback to nearest
         target_expiry = expiries[0]
         for exp in expiries:
             if "Jan" in exp or "JAN" in exp and "26" in exp:
                 target_expiry = exp
                 break
 
-        # Get options for target expiry
-        options_data = [opt for opt in data["records"]["data"] if opt["expiryDate"] == target_expiry]
+        options_data = [opt for opt in data["records"]["data"] if opt.get("expiryDate") == target_expiry]
 
-        # Find nearest ATM strike
-        strikes = sorted({opt["strikePrice"] for opt in options_data})
-        atm_strike = min(strikes, key=lambda x: abs(x - spot))
+        strikes = sorted({opt["strikePrice"] for opt in options_data if "strikePrice" in opt})
+        atm_strike = min(strikes, key=lambda x: abs(x - spot)) if strikes else spot
 
-        # Get premiums
         call_premium = put_premium = "N/A"
         for opt in options_data:
-            if opt["strikePrice"] == atm_strike:
+            if opt.get("strikePrice") == atm_strike:
                 if "CE" in opt:
                     call_premium = opt["CE"].get("lastPrice", "N/A")
                 if "PE" in opt:
@@ -74,26 +82,23 @@ def fetch_nifty_option_chain():
             "timestamp": datetime.now().strftime("%d %b %Y, %I:%M %p IST")
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"NSE data fetch failed: {str(e)}")
-
-@app.get("/")
-def home():
-    return {"message": "Dhruv Stock Forecast API is live! 🚀"}
+        raise HTTPException(status_code=500, detail=f"Failed to fetch NSE data: {str(e)}")
 
 @app.get("/support-resistance")
 def support_resistance():
     try:
         data = fetch_nifty_option_chain()
+        # Simple logic for now (you can improve later)
         return {
             "spot": data["spot"],
-            "support": round(data["spot"] - 100, 2),  # Simple logic for demo
-            "resistance": round(data["spot"] + 100, 2),
-            "logic": "Simple range around spot (±100 points)",
+            "support": round(data["spot"] - 150, 2),
+            "resistance": round(data["spot"] + 150, 2),
+            "logic": "Approximate intraday range (±150 points from spot)",
             "validity": "Intraday",
-            "disclaimer": "Educational purpose only"
+            "disclaimer": "For educational purposes only"
         }
-    except:
-        return {"error": "Failed to fetch data"}
+    except Exception as e:
+        return {"error": "Could not fetch data", "details": str(e)}
 
 @app.get("/generate-report")
 def generate_report():
@@ -102,50 +107,57 @@ def generate_report():
         spot = market_data["spot"]
 
         prompt = f"""
-You are an expert financial analyst specializing in the Indian equity and derivatives markets, especially Nifty 50 options.
+You are an expert Indian stock market analyst specializing in Nifty 50 and options trading.
 
-Current Nifty 50 spot level: {spot}
-ATM Strike: {market_data['atm_strike']}
-Call Premium ≈ ₹{market_data['call_premium']}
-Put Premium ≈ ₹{market_data['put_premium']}
-Expiry: {market_data['expiry']}
+Current Date: 07 January 2026
+Current Nifty Spot: {spot}
+Near ATM Strike: {market_data['atm_strike']}
+Call Premium: ≈ ₹{market_data['call_premium']}
+Put Premium: ≈ ₹{market_data['put_premium']}
+Target Expiry: {market_data['expiry']}
 
-Today is 07 January 2026. Trading hours: 9:30 AM to 3:00 PM IST.
+Trading session: 9:30 AM to 3:00 PM IST
+Strategy: High-risk intraday option buying
 
-Using technical analysis (support/resistance, candlesticks, IV, Greeks), fundamental cues (FII/DII, global markets, news), and sentiment:
+Using technical analysis, support/resistance, implied volatility, global cues, FII/DII data, news sentiment:
 
-1. Give intraday probability estimates (%):
-   - Chance Nifty closes higher than {spot}
-   - Chance Nifty closes lower than {spot}
-   - Chance of volatile move (big up or down)
+1. Estimate intraday probabilities (%):
+   - Nifty closes higher than current spot
+   - Nifty closes lower than current spot
+   - High volatility move expected
 
-2. Recommend the better high-risk intraday option buying strategy:
-   - Buy near-ATM Calls only
-   - Buy near-ATM Puts only
-   Estimate expected return (%) and key risks.
+2. Recommend which is better today for intraday profit:
+   - Buy near-ATM CALLS only
+   - Buy near-ATM PUTS only
 
-3. End with a concise Actionable Summary:
-   • Recommended strategy today
-   • Strike to buy
-   • Approx premium and success probability
+   For the better one, estimate:
+   - Expected return potential (%)
+   - Key risks (time decay, volatility crush, news events)
 
-Important: This is for educational purposes only. Not financial advice. Options trading carries high risk.
+3. End with a clear Actionable Summary:
+   • Recommended action today (Buy Calls / Buy Puts / Avoid)
+   • Suggested strike
+   • Approx premium to pay
+   • Success probability
+
+Disclaimer: This is for educational purposes only. Not financial advice. Options trading is high risk.
 """
 
         response = groq_client.chat.completions.create(
-            model="llama-3.1-70b-versatile",  # Fast & smart on Groq
+            model="llama-3.1-70b-versatile",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=1200
         )
-        report = response.choices[0].message.content
+        report = response.choices[0].message.content.strip()
 
         return {
             "success": True,
             "generated_at": market_data["timestamp"],
             "current_spot": spot,
+            "atm_strike": market_data["atm_strike"],
             "report": report
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI report failed: {str(e)}")
