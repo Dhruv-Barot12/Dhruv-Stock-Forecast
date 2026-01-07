@@ -1,150 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dhruv Stock Forecast</title>
+<meta charset="UTF-8">
+<title>Dhruv Stock Forecast</title>
 
-  <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      color: #333;
-      min-height: 100vh;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: auto;
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      color: #1a5fb4;
-      text-align: center;
-    }
-
-    h2 {
-      color: #0d47a1;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 10px;
-      margin-top: 40px;
-    }
-
-    button {
-      padding: 14px 28px;
-      font-size: 18px;
-      margin: 15px 10px 15px 0;
-      cursor: pointer;
-      background: #1a5fb4;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: #0d47a1;
-      transform: translateY(-2px);
-    }
-
-    #output {
-      margin-top: 30px;
-      padding: 25px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      border-left: 5px solid #1a5fb4;
-      line-height: 1.8;
-      font-size: 16px;
-    }
-
-    .disclaimer {
-      font-size: 13px;
-      color: #666;
-      text-align: center;
-      margin-top: 50px;
-      font-style: italic;
-    }
-  </style>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg,#f5f7fa,#c3cfe2);
+  padding: 30px;
+}
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+}
+button {
+  padding: 12px 24px;
+  background: #1a5fb4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button:hover { background:#0d47a1; }
+#output {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-left: 5px solid #1a5fb4;
+}
+</style>
 </head>
 
 <body>
 <div class="container">
   <h1>🔮 Dhruv Stock Forecast</h1>
-  <p style="text-align:center; font-size:18px;">
-    Real-time Nifty 50 Analysis • AI-Powered Intraday Insights
-  </p>
 
-  <h2>📊 Support & Resistance Levels</h2>
-  <button onclick="getSupportResistance()">Get Current Levels</button>
+  <h3>📊 Support & Resistance</h3>
+  <button onclick="getLevels()">Get Current Levels</button>
 
-  <h2>🤖 AI Intraday Options Strategy</h2>
-  <p>High-risk intraday outlook (Calls vs Puts)</p>
-  <button onclick="generateReport()">Generate AI Report</button>
+  <h3>🤖 AI Intraday Report</h3>
+  <button onclick="getReport()">Generate AI Report</button>
 
   <div id="output"></div>
-
-  <div class="disclaimer">
-    <strong>Disclaimer:</strong> Educational purposes only. Not financial advice.
-    Trading involves risk.
-  </div>
 </div>
 
 <script>
-const API_BASE = "https://dhruv-stock-forecast.onrender.com";
+const API = "https://dhruv-stock-forecast.onrender.com";
 
-async function getSupportResistance() {
-  const output = document.getElementById("output");
-  output.innerHTML = "<p>Loading support & resistance…</p>";
-
-  try {
-    const res = await fetch(`${API_BASE}/support-resistance`);
-    if (!res.ok) throw new Error("API failed");
-
-    const data = await res.json();
-
-    output.innerHTML = `
-      <h3>📌 Current Nifty Levels</h3>
-      <p><strong>Spot Price:</strong> ${data.spot}</p>
-      <p><strong>Support:</strong> ${data.support}</p>
-      <p><strong>Resistance:</strong> ${data.resistance}</p>
-      <p><em>${data.logic} • ${data.validity}</em></p>
-      <p><small>${data.disclaimer}</small></p>
-    `;
-  } catch (err) {
-    output.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
-  }
+async function getLevels() {
+  const o = document.getElementById("output");
+  o.innerHTML = "Loading...";
+  const r = await fetch(API + "/support-resistance");
+  const d = await r.json();
+  o.innerHTML = `
+    <b>Spot:</b> ${d.spot}<br>
+    <b>Support:</b> ${d.support}<br>
+    <b>Resistance:</b> ${d.resistance}
+  `;
 }
 
-async function generateReport() {
-  const output = document.getElementById("output");
-  output.innerHTML = "<h3>🔄 Generating AI report…</h3><p>Please wait (10–20 seconds).</p>";
+async function getReport() {
+  const o = document.getElementById("output");
+  o.innerHTML = "Generating AI report (10–20s)...";
+  const r = await fetch(API + "/generate-report");
+  const d = await r.json();
 
-  try {
-    const res = await fetch(`${API_BASE}/generate-report`);
-    if (!res.ok) throw new Error("AI service failed");
-
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || "Report generation failed");
-
-    output.innerHTML = `
-      <h3>📈 AI Intraday Options Report</h3>
-      <p><strong>Generated:</strong> ${data.generated_at}</p>
-      <p><strong>Spot:</strong> ${data.spot} |
-         <strong>ATM Strike:</strong> ${data.atm_strike}</p>
-      <hr>
-      <div style="white-space: pre-wrap; font-size: 16.5px;">
-        ${data.report.replace(/\n/g, "<br>")}
-      </div>
-    `;
-  } catch (err) {
-    output.innerHTML = `<p style="color:red;">⚠️ ${err.message}</p>`;
+  if (!d.success) {
+    o.innerHTML = "Error: " + (d.detail || "AI failed");
+    return;
   }
+
+  o.innerHTML = `
+    <b>Spot:</b> ${d.spot}<br>
+    <b>ATM:</b> ${d.atm_strike}<hr>
+    ${d.report.replace(/\n/g,"<br>")}
+  `;
 }
 </script>
 </body>
