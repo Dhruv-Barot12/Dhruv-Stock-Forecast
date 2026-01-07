@@ -88,11 +88,12 @@ Give:
             "Content-Type": "application/json",
         },
         json={
-            "model": "llama3-70b-8192",
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.6,
-            "max_tokens": 500,
-        },
+    "model": "llama-3.1-70b-versatile",
+    "messages": [{"role": "user", "content": prompt}],
+    "temperature": 0.6,
+    "max_tokens": 500,
+}
+,
         timeout=30,
     )
 
