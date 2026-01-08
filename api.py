@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import yfinance as yf
 from datetime import datetime
 import os
@@ -9,22 +9,25 @@ from openai import OpenAI
 
 app = FastAPI()
 
-# ---------- CORS ----------
+# CORS (important)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---------- FRONTEND ----------
+# Serve frontend
 app.mount("/static", StaticFiles(directory="Frontend"), name="static")
 
 @app.get("/")
 def home():
     return FileResponse("Frontend/index.html")
 
-# ---------- MARKET DATA ----------
+# ------------------------
+# Market data
+# ------------------------
 def get_nifty_data():
     ticker = yf.Ticker("^NSEI")
     hist = ticker.history(period="2d")
@@ -43,7 +46,9 @@ def get_nifty_data():
         "time": datetime.now().strftime("%d %b %Y, %I:%M %p IST")
     }
 
-# ---------- SUPPORT / RESISTANCE ----------
+# ------------------------
+# Support / Resistance
+# ------------------------
 @app.get("/support-resistance")
 def support_resistance():
     d = get_nifty_data()
@@ -52,18 +57,20 @@ def support_resistance():
         "support": d["low"],
         "resistance": d["high"],
         "logic": "Day Low = Support | Day High = Resistance",
-        "validity": "Intraday only",
+        "validity": "Intraday",
         "disclaimer": "Educational purpose only"
     }
 
-# ---------- 9:30 TRADE (GROQ AI) ----------
+# ------------------------
+# 9:30 Trade (GROQ AI)
+# ------------------------
 @app.get("/generate-report")
 def generate_report():
     d = get_nifty_data()
 
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        raise HTTPException(status_code=500, detail="GROQ_API_KEY not set")
+        raise HTTPException(status_code=500, detail="GROQ_API_KEY missing")
 
     client = OpenAI(
         api_key=api_key,
@@ -80,36 +87,44 @@ TIME: 9:30 AM – 3:00 PM
 EXPIRY: 27 Jan 2026 (Monthly)
 RISK: HIGH
 
-Give probabilities (%):
-1. Upside
-2. Downside
-3. Volatile
+Tasks:
+1. Give probabilities (%) for:
+   - Upside
+   - Downside
+   - Volatile
+   (Total must be 100%)
 
-Rules:
-• Recommend ONLY ONE: BUY CALL / BUY PUT / BOTH / NO TRADE
-• If probabilities unclear → NO TRADE
-• Mention strike, approx premium, expected return %, risk %
+2. Choose ONLY ONE:
+   - BUY CALL
+   - BUY PUT
+   - BOTH
+   - NO TRADE
+
+3. Mention:
+   - Strike
+   - Approx premium (₹)
+   - Expected return %
+   - Risk %
 
 End with **Actionable Summary**.
 """
 
     try:
-        response = client.chat.completions.create(
-            model="mixtral-8x7b-32768",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-            max_tokens=900
+        response = client.responses.create(
+            model="llama-3.3-70b-versatile",
+            input=prompt
         )
-
-        report = response.choices[0].message.content.strip()
 
         return {
             "success": True,
             "spot": d["spot"],
             "atm": d["atm"],
             "generated_at": d["time"],
-            "report": report
+            "report": response.output_text
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Groq API failed: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Groq API failed: {str(e)}"
+        )
