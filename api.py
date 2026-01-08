@@ -1,16 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import yfinance as yf
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import pytz
-import os
-from openai import OpenAI
 
 app = FastAPI()
 
-# ---------------- CORS ----------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,99 +12,60 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------- STATIC ----------------
-app.mount("/static", StaticFiles(directory="Frontend"), name="static")
-
-@app.get("/")
-def home():
-    return FileResponse("Frontend/index.html")
-
-# ---------------- TIMEZONE ----------------
 IST = pytz.timezone("Asia/Kolkata")
 
-def ist_now():
-    return datetime.now(IST)
 
-def is_valid_prompt_time():
-    now = ist_now().time()
-    return time(9, 20) <= now <= time(9, 28)
+def get_expiry_dates():
+    today = datetime.now(IST).date()
 
-# ---------------- MARKET DATA ----------------
-def get_nifty_data():
-    ticker = yf.Ticker("^NSEI")
-    hist = ticker.history(period="2d")
-    today = hist.iloc[-1]
+    # Weekly expiry = next Thursday
+    days_to_thu = (3 - today.weekday()) % 7
+    weekly_expiry = today + timedelta(days=days_to_thu)
 
-    spot = round(today["Close"], 2)
-    high = round(today["High"], 2)
-    low = round(today["Low"], 2)
-    atm = round(spot / 50) * 50
+    # Monthly expiry = last Thursday of month
+    month_end = today.replace(day=28) + timedelta(days=4)
+    last_day = month_end - timedelta(days=month_end.day)
+    monthly_expiry = last_day - timedelta(days=(last_day.weekday() - 3) % 7)
 
-    return spot, high, low, atm
+    return weekly_expiry, monthly_expiry
 
-# ---------------- SUPPORT / RESISTANCE ----------------
-@app.get("/support-resistance")
-def support_resistance():
-    spot, high, low, _ = get_nifty_data()
-    return {
-        "spot": spot,
-        "support": low,
-        "resistance": high
-    }
 
-# ---------------- 9:30 TRADE ----------------
-@app.get("/generate-report")
-def generate_report():
+@app.get("/trade-930")
+def trade_930():
+    now = datetime.now(IST).time()
 
-    now = ist_now()
+    start = time(9, 20)
+    end = time(9, 28)
 
-    weekly_expiry = "09 Jan 2026"
-    monthly_expiry = "27 Jan 2026"
+    weekly_expiry, monthly_expiry = get_expiry_dates()
 
-    # ❌ TIME BLOCK
-    if not is_valid_prompt_time():
+    # ❌ BLOCK execution outside time window
+    if not (start <= now <= end):
         return {
-            "no_trade": True,
-            "generated": now.strftime("%d %b %Y, %I:%M %p IST"),
-            "weekly_expiry": weekly_expiry,
-            "monthly_expiry": monthly_expiry
+            "status": "NO_TRADE",
+            "message_en": "This prompt should be executed only between 9:20 AM and 9:28 AM.",
+            "message_hi": "यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।",
+            "generated": datetime.now(IST).strftime("%d %b %Y, %I:%M %p IST"),
+            "weekly_expiry": weekly_expiry.strftime("%d %b %Y"),
+            "monthly_expiry": monthly_expiry.strftime("%d %b %Y"),
         }
 
-    spot, high, low, atm = get_nifty_data()
-
-    client = OpenAI(
-        api_key=os.getenv("GROQ_API_KEY"),
-        base_url="https://api.groq.com/openai/v1"
-    )
-
-    prompt = f"""
-You are an expert NIFTY 50 options trader.
-
-Spot: {spot}
-ATM: {atm}
-Day High: {high}
-Day Low: {low}
-
-Rules:
-- Always ONE strategy only (CALL or PUT or NO TRADE)
-- High-risk intraday view
-- Give probabilities for Upside / Downside / Volatile
-- Give strike, expected return %, risk %
-- Short actionable summary
-"""
-
-    response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.6,
-        max_tokens=500
-    )
-
+    # ✅ Allowed execution window
     return {
-        "spot": spot,
-        "atm": atm,
-        "generated": now.strftime("%d %b %Y, %I:%M %p IST"),
-        "weekly_expiry": weekly_expiry,
-        "monthly_expiry": monthly_expiry,
-        "report": response.choices[0].message.content
+        "status": "TRADE",
+        "spot": 25876.85,
+        "atm": 25900,
+        "probabilities": {
+            "upside": 60,
+            "downside": 20,
+            "volatile": 20,
+        },
+        "decision": "BUY CALL",
+        "strike": 25900,
+        "premium": 420,
+        "expected_return": 15,
+        "risk": 80,
+        "generated": datetime.now(IST).strftime("%d %b %Y, %I:%M %p IST"),
+        "weekly_expiry": weekly_expiry.strftime("%d %b %Y"),
+        "monthly_expiry": monthly_expiry.strftime("%d %b %Y"),
     }
