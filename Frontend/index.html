@@ -1,148 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>💰 Paisa कमाओ</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body {
-    margin: 0;
-    font-family: system-ui, Arial;
-    background: linear-gradient(135deg, #eef2f7, #d9e2ec);
-}
-
-.container {
-    max-width: 1100px;
-    margin: 60px auto;
-    padding: 30px;
-}
-
-.header {
-    background: white;
-    padding: 30px;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.1);
-}
-
-.header h1 {
-    margin: 0;
-    font-size: 36px;
-}
-
-.header p {
-    color: #555;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 25px;
-    margin-top: 25px;
-}
-
-.card {
-    background: white;
-    padding: 25px;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.08);
-}
-
-button {
-    width: 100%;
-    padding: 14px;
-    font-size: 16px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    margin-bottom: 15px;
-}
-
-.blue { background:#2563eb; color:white; }
-.green { background:#065f46; color:white; }
-
-#output {
-    white-space: pre-wrap;
-    line-height: 1.6;
-}
-
-.footer {
-    text-align: center;
-    margin-top: 30px;
-    font-size: 13px;
-    color: #555;
-}
-</style>
+  <meta charset="UTF-8" />
+  <title>Paisa कमाओ</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+  <div class="container">
+    <h1>💰 Paisa कमाओ</h1>
+    <p class="subtitle">9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
 
-<div class="container">
+    <div class="actions">
+      <button onclick="getSR()">📊 Support & Resistance</button>
+      <button onclick="getTrade()">⏰ 9:30 Trade</button>
+    </div>
 
-<div class="header">
-<h1>💰 Paisa कमाओ</h1>
-<p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
-</div>
+    <div id="output" class="output">
+      Click a button to get insights.
+    </div>
 
-<div class="grid">
-
-<div class="card">
-<h3>📌 Quick Actions</h3>
-
-<button class="blue" onclick="getSR()">📊 Support & Resistance</button>
-<button class="green" onclick="getTrade()">⏰ 9:30 Trade</button>
-
-<p><b>Risk:</b> High<br>
-<b>Time:</b> 9:30 AM – 3:00 PM<br>
-<b>Expiry:</b> 27 Jan 2026</p>
-</div>
-
-<div class="card">
-<h3>📈 Trade Output</h3>
-<div id="output">Click a button to get insights.</div>
-</div>
-
-</div>
-
-<div class="footer">
-Educational purpose only. Options trading involves high risk.
-</div>
-
-</div>
+    <p class="disclaimer">
+      Educational purpose only. Options trading involves high risk.
+    </p>
+  </div>
 
 <script>
 async function getSR() {
-    output.innerText = "Loading support & resistance...";
-    const res = await fetch("/support-resistance");
-    const d = await res.json();
+  output.innerHTML = "Loading...";
+  const r = await fetch("/support-resistance");
+  const d = await r.json();
 
-    output.innerText =
-`Spot: ${d.spot}
-Support: ${d.support}
-Resistance: ${d.resistance}
-
-Logic: ${d.logic}
-${d.disclaimer}`;
+  output.innerHTML = `
+    <h3>📊 Support & Resistance</h3>
+    <p><b>Spot:</b> ${d.spot}</p>
+    <p><b>Support:</b> ${d.support}</p>
+    <p><b>Resistance:</b> ${d.resistance}</p>
+    <small>${d.logic}</small>
+  `;
 }
 
 async function getTrade() {
-    output.innerText = "Generating 9:30 trade (AI)... Please wait.";
-    const res = await fetch("/generate-report");
-    const d = await res.json();
+  output.innerHTML = "Generating AI trade... (10–20 sec)";
+  const r = await fetch("/generate-report");
+  const d = await r.json();
 
-    if (!d.success) {
-        output.innerText = "AI service unavailable.";
-        return;
-    }
+  if (!d.success) {
+    output.innerHTML = "AI service unavailable.";
+    return;
+  }
 
-    output.innerText =
-`9:30 TRADE REPORT
-
-Spot: ${d.spot}
-ATM: ${d.atm}
-Generated: ${d.generated_at}
-
-${d.report}`;
+  output.innerHTML = `
+    <h3>⏰ 9:30 Trade Report</h3>
+    <p><b>Spot:</b> ${d.spot} | <b>ATM:</b> ${d.atm}</p>
+    <p><b>Generated:</b> ${d.generated_at}</p>
+    <hr>
+    <pre>${d.report}</pre>
+  `;
 }
 </script>
 
