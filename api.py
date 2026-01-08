@@ -3,14 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, time
 import pytz
 import os
 from openai import OpenAI
 
 app = FastAPI()
 
-# ---------- CORS ----------
+# ---------------- CORS ----------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,110 +18,99 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------- STATIC ----------
+# ---------------- STATIC ----------------
 app.mount("/static", StaticFiles(directory="Frontend"), name="static")
 
 @app.get("/")
 def home():
     return FileResponse("Frontend/index.html")
 
-# ---------- IST TIME ----------
-def ist_time():
-    tz = pytz.timezone("Asia/Kolkata")
-    return datetime.now(tz).strftime("%d %b %Y, %I:%M %p IST")
+# ---------------- TIMEZONE ----------------
+IST = pytz.timezone("Asia/Kolkata")
 
-# ---------- MARKET DATA ----------
+def ist_now():
+    return datetime.now(IST)
+
+def is_valid_prompt_time():
+    now = ist_now().time()
+    return time(9, 20) <= now <= time(9, 28)
+
+# ---------------- MARKET DATA ----------------
 def get_nifty_data():
     ticker = yf.Ticker("^NSEI")
     hist = ticker.history(period="2d")
     today = hist.iloc[-1]
 
-    spot = round(float(today["Close"]), 2)
-    high = round(float(today["High"]), 2)
-    low = round(float(today["Low"]), 2)
+    spot = round(today["Close"], 2)
+    high = round(today["High"], 2)
+    low = round(today["Low"], 2)
     atm = round(spot / 50) * 50
 
-    return {
-        "spot": spot,
-        "high": high,
-        "low": low,
-        "atm": atm,
-        "time": ist_time()
-    }
+    return spot, high, low, atm
 
-# ---------- SUPPORT / RESISTANCE ----------
+# ---------------- SUPPORT / RESISTANCE ----------------
 @app.get("/support-resistance")
 def support_resistance():
-    data = get_nifty_data()
+    spot, high, low, _ = get_nifty_data()
     return {
-        "spot": data["spot"],
-        "support": data["low"],
-        "resistance": data["high"],
-        "logic": "Day Low = Support | Day High = Resistance",
-        "validity": "Intraday",
-        "generated": data["time"]
+        "spot": spot,
+        "support": low,
+        "resistance": high
     }
 
-# ---------- 9:30 TRADE ----------
-@app.get("/nine-thirty-trade")
-def nine_thirty_trade():
-    data = get_nifty_data()
+# ---------------- 9:30 TRADE ----------------
+@app.get("/generate-report")
+def generate_report():
 
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        return {"error": "GROQ_API_KEY not set"}
+    now = ist_now()
+
+    weekly_expiry = "09 Jan 2026"
+    monthly_expiry = "27 Jan 2026"
+
+    # ❌ TIME BLOCK
+    if not is_valid_prompt_time():
+        return {
+            "no_trade": True,
+            "generated": now.strftime("%d %b %Y, %I:%M %p IST"),
+            "weekly_expiry": weekly_expiry,
+            "monthly_expiry": monthly_expiry
+        }
+
+    spot, high, low, atm = get_nifty_data()
 
     client = OpenAI(
-        api_key=api_key,
+        api_key=os.getenv("GROQ_API_KEY"),
         base_url="https://api.groq.com/openai/v1"
     )
 
     prompt = f"""
-You are an expert Indian options trader.
+You are an expert NIFTY 50 options trader.
 
-NIFTY Spot: {data['spot']}
-ATM Strike: {data['atm']}
-Date: 07 Jan 2026
-Trading Time: 9:30 AM – 3:00 PM IST
-Expiry: 27 Jan 2026 (Monthly)
-Risk Profile: HIGH
+Spot: {spot}
+ATM: {atm}
+Day High: {high}
+Day Low: {low}
 
 Rules:
-- Always suggest ONLY ONE strategy (CALL OR PUT OR NO TRADE)
-- NEVER suggest BUY PUT unless clearly dominant
-- Give probabilities totaling 100%
-- If probabilities are unclear → NO TRADE
-
-Return format strictly:
-
-Probabilities:
-Upside: %
-Downside: %
-Volatile: %
-
-Final Decision: BUY CALL / BUY PUT / NO TRADE
-
-If Trade:
-Strike:
-Estimated Premium (₹):
-Expected Return %:
-Risk %:
-
-Actionable Summary (2 lines)
+- Always ONE strategy only (CALL or PUT or NO TRADE)
+- High-risk intraday view
+- Give probabilities for Upside / Downside / Volatile
+- Give strike, expected return %, risk %
+- Short actionable summary
 """
 
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.6,
-        max_tokens=600
+        max_tokens=500
     )
 
-    report = response.choices[0].message.content.strip()
-
     return {
-        "spot": data["spot"],
-        "atm": data["atm"],
-        "generated": data["time"],
-        "report": report
+        "spot": spot,
+        "atm": atm,
+        "generated": now.strftime("%d %b %Y, %I:%M %p IST"),
+        "weekly_expiry": weekly_expiry,
+        "monthly_expiry": monthly_expiry,
+        "report": response.choices[0].message.content
     }
