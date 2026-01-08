@@ -1,54 +1,54 @@
 body {
-  background: #eef2f7;
-  font-family: Arial, sans-serif;
+  font-family: system-ui, Arial;
+  background: linear-gradient(135deg,#eef2f7,#d9e4f5);
+  margin: 0;
+  padding: 40px;
 }
 
-.card {
-  max-width: 800px;
-  margin: 60px auto;
+.container {
+  max-width: 900px;
+  margin: auto;
   background: white;
   padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.1);
 }
 
 h1 {
-  margin-bottom: 5px;
+  margin: 0;
 }
 
-.tagline {
+.subtitle {
   color: #555;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
-button {
-  padding: 12px 18px;
-  margin: 10px 5px;
+.actions button {
+  padding: 14px 24px;
+  margin-right: 10px;
+  border: none;
+  border-radius: 10px;
   font-size: 16px;
   cursor: pointer;
-  background: #1a5fb4;
+  background: #2563eb;
   color: white;
-  border: none;
-  border-radius: 6px;
 }
 
-button:hover {
-  background: #0d47a1;
+.actions button:last-child {
+  background: #047857;
 }
 
-#output {
-  margin-top: 20px;
-  padding: 15px;
-  background: #f7f9fc;
-  border-left: 4px solid #1a5fb4;
-}
-
-pre {
+.output {
+  margin-top: 25px;
+  background: #f8fafc;
+  padding: 20px;
+  border-radius: 10px;
   white-space: pre-wrap;
 }
 
 .disclaimer {
+  text-align: center;
+  font-size: 13px;
+  color: #666;
   margin-top: 30px;
-  font-size: 12px;
-  color: #777;
 }
