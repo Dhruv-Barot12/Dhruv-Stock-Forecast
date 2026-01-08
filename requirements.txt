@@ -1,5 +1,4 @@
 fastapi
-uvicorn[standard]
+uvicorn
+pytz
 yfinance
-requests
-openai
