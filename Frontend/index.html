@@ -3,51 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <title>Paisa कमाओ</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body {
+  font-family: Arial, sans-serif;
+  background: #eef2f7;
   margin: 0;
-  font-family: Inter, Arial, sans-serif;
-  background: linear-gradient(135deg,#eef2f7,#dfe7f1);
+  padding: 30px;
 }
+
 .container {
   max-width: 1100px;
   margin: auto;
-  padding: 40px 20px;
 }
+
 .card {
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  background: white;
+  border-radius: 14px;
+  padding: 25px;
+  margin-bottom: 20px;
 }
+
 .flex {
   display: flex;
-  gap: 24px;
+  gap: 20px;
 }
-.btn {
+
+button {
   width: 100%;
   padding: 14px;
-  font-size: 16px;
   border: none;
   border-radius: 10px;
+  font-size: 16px;
   cursor: pointer;
-  color: #fff;
 }
-.blue { background:#2563eb }
-.green { background:#047857 }
+
+.blue { background: #2563eb; color: white; }
+.green { background: #047857; color: white; }
+
 .notice {
-  background:#f1f5f9;
-  padding:12px;
-  border-radius:8px;
-  margin-bottom:12px;
-  font-size:14px;
-}
-.output {
-  white-space: pre-wrap;
-  font-size:15px;
+  background: #fef3c7;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-size: 14px;
 }
 </style>
 </head>
@@ -55,81 +53,52 @@ body {
 <body>
 <div class="container">
 
-<div class="card">
-  <h1>💰 Paisa कमाओ</h1>
-  <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
-</div>
-
-<div class="flex">
-
-<div class="card" style="width:35%">
-  <h3>📌 Quick Actions</h3>
-  <button class="btn blue" onclick="support()">Support & Resistance</button><br><br>
-  <button class="btn green" onclick="trade930()">9:30 Trade</button>
-
-  <p><b>Risk:</b> High</p>
-  <p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
-</div>
-
-<div class="card" style="width:65%">
-  <div class="notice">
-    👉 <b>English:</b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
-    👉 <b>Hindi:</b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
+  <div class="card">
+    <h1>💰 Paisa कमाओ</h1>
+    <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
   </div>
 
-  <h3>📊 Trade Output</h3>
-  <div id="out" class="output">Click a button to generate report.</div>
-</div>
+  <div class="flex">
+    <div class="card" style="width:35%">
+      <h3>📌 Quick Actions</h3>
+      <button class="blue">Support & Resistance</button><br><br>
+      <button class="green" onclick="loadTrade()">9:30 Trade</button>
 
-</div>
+      <p><b>Risk:</b> High</p>
+      <p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
+    </div>
+
+    <div class="card" style="width:65%">
+      <div class="notice">
+        👉 <b>English:</b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
+        👉 <b>Hindi:</b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
+      </div>
+
+      <h3>📊 Trade Output</h3>
+      <pre id="output">Click on "9:30 Trade"</pre>
+    </div>
+  </div>
+
 </div>
 
 <script>
-async function support(){
-  const r = await fetch('/support-resistance');
-  const d = await r.json();
-  out.innerText =
-`Spot: ${d.spot}
-Support: ${d.support}
-Resistance: ${d.resistance}`;
-}
+function loadTrade() {
+  fetch("/trade")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("output").innerText =
+`Spot: ${data.spot}
+ATM: ${data.atm}
 
-async function trade930(){
-  const r = await fetch('/trade-930');
-  const d = await r.json();
+Generated: ${data.generated}
+Weekly Expiry: ${data.weekly_expiry}
+Monthly Expiry: ${data.monthly_expiry}
 
-  if(d.status === "NO TRADE"){
-    out.innerText =
-`NO TRADE
-
-Generated: ${d.generated}
-Weekly Expiry: ${d.weekly_expiry}
-Monthly Expiry: ${d.monthly_expiry}`;
-    return;
-  }
-
-  out.innerText =
-`Final Decision: ${d.status}
-
-Spot: ${d.spot}
-ATM: ${d.atm}
-
-Generated: ${d.generated}
-Weekly Expiry: ${d.weekly_expiry}
-Monthly Expiry: ${d.monthly_expiry}
-
-Probabilities:
-Upside: ${d.probabilities.upside}%
-Downside: ${d.probabilities.downside}%
-Volatile: ${d.probabilities.volatile}%
-
-Trade:
-Strike: ${d.trade.strike}
-Premium: ₹${d.trade.estimated_premium}
-Expected Return: ${d.trade.expected_return_pct}%
-Risk: ${d.trade.risk_pct}%
-
-${d.summary}`;
+Final Decision: ${data.decision}
+Premium: ₹${data.premium}
+Expected Return: ${data.expected_return}
+Risk: ${data.risk}`;
+    });
 }
 </script>
 
