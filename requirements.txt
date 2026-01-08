@@ -2,4 +2,4 @@ fastapi
 uvicorn[standard]
 yfinance
 openai
-python-dotenv
+requests
