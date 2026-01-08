@@ -2,146 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Paisa कमाओ</title>
-
-  <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      color: #333;
-      min-height: 100vh;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: auto;
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-
-    h1 {
-      color: #1a5fb4;
-      text-align: center;
-      font-size: 38px;
-    }
-
-    h2 {
-      color: #0d47a1;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 10px;
-      margin-top: 40px;
-    }
-
-    button {
-      padding: 14px 28px;
-      font-size: 18px;
-      margin: 15px 0;
-      cursor: pointer;
-      background: #1a5fb4;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: #0d47a1;
-      transform: translateY(-2px);
-    }
-
-    #report-output {
-      margin-top: 30px;
-      padding: 25px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      border-left: 5px solid #1a5fb4;
-      line-height: 1.8;
-      font-size: 16px;
-    }
-
-    .disclaimer {
-      font-size: 13px;
-      color: #666;
-      text-align: center;
-      margin-top: 50px;
-      font-style: italic;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <div class="container">
 
-    <h1>💰 Paisa कमाओ</h1>
+<div class="card">
+  <h1>💰 Paisa कमाओ</h1>
+  <p class="tagline">9:30 AM High-Risk Intraday Options Insight</p>
 
-    <p style="text-align:center; font-size:18px;">
-      Smart Stock Insights • Simple • Practical • Indian
-    </p>
+  <button onclick="getLevels()">📊 Get Support & Resistance</button>
+  <button onclick="getTrade()">⏰ 9:30 Trade</button>
 
-    <!-- SUPPORT & RESISTANCE -->
-    <h2>📊 Support & Resistance Levels</h2>
-    <button onclick="getSupportResistance()">Get Current Levels</button>
+  <div id="output"></div>
 
-    <!-- AI REPORT -->
-    <h2>🤖 AI Intraday Options Strategy</h2>
-    <p>Get today’s intraday bias for Nifty (Calls vs Puts)</p>
-    <button onclick="generateReport()">Generate AI Report</button>
+  <p class="disclaimer">
+    Educational purpose only. Options trading involves high risk.
+  </p>
+</div>
 
-    <div id="report-output"></div>
+<script>
+async function getLevels() {
+  document.getElementById("output").innerHTML = "Loading...";
+  const res = await fetch("/support-resistance");
+  const d = await res.json();
 
-    <div class="disclaimer">
-      <strong>Disclaimer:</strong> All information is for educational purposes only.
-      Trading involves risk. Trade at your own responsibility.
-    </div>
+  document.getElementById("output").innerHTML = `
+    <h3>Support & Resistance</h3>
+    Spot: ${d.spot}<br>
+    Support: ${d.support}<br>
+    Resistance: ${d.resistance}
+  `;
+}
 
-  </div>
+async function getTrade() {
+  document.getElementById("output").innerHTML = "Analyzing market...";
+  const res = await fetch("/nine-thirty-trade");
+  const d = await res.json();
 
-  <script>
-    async function getSupportResistance() {
-      document.getElementById("report-output").innerHTML =
-        "<p>Loading support & resistance...</p>";
+  if (!d.success) {
+    document.getElementById("output").innerHTML = "AI failed.";
+    return;
+  }
 
-      try {
-        const res = await fetch("/support-resistance");
-        const data = await res.json();
+  document.getElementById("output").innerHTML = `
+    <h3>9:30 Trade Report</h3>
+    Spot: ${d.spot} | ATM: ${d.atm}<br>
+    Generated: ${d.generated_at}
+    <hr>
+    <pre>${d.report}</pre>
+  `;
+}
+</script>
 
-        if (data.error) throw new Error(data.error);
-
-        document.getElementById("report-output").innerHTML = `
-          <h3>📌 Current Nifty Levels</h3>
-          <p><strong>Spot Price:</strong> ${data.spot}</p>
-          <p><strong>Support:</strong> ${data.support}</p>
-          <p><strong>Resistance:</strong> ${data.resistance}</p>
-          <p><em>${data.logic} • Validity: ${data.validity}</em></p>
-          <p><small>${data.disclaimer}</small></p>
-        `;
-      } catch (err) {
-        document.getElementById("report-output").innerHTML =
-          `<p style="color:red;">❌ ${err.message}</p>`;
-      }
-    }
-
-    async function generateReport() {
-      document.getElementById("report-output").innerHTML =
-        "<p>🤖 Generating AI report… please wait</p>";
-
-      try {
-        const res = await fetch("/generate-report");
-        const data = await res.json();
-
-        if (!data.success) throw new Error(data.error || "AI failed");
-
-        document.getElementById("report-output").innerHTML = `
-          <h3>📈 AI Intraday Report</h3>
-          <p><strong>Generated:</strong> ${data.generated_at}</p>
-          <p><strong>Spot:</strong> ${data.spot} |
-             <strong>ATM Strike:</strong> ${data.atm_strike}</p>
-          <hr>
-          <div style="white-space: pre-wrap;">
-            ${data.report.replace(/\n/g, "<br>")}
-          </div
+</body>
+</html>
