@@ -1,68 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Paisa कमाओ</title>
-  <link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<title>Paisa कमाओ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: system-ui, Arial;
+  background: linear-gradient(135deg,#eef2f7,#dbe4f0);
+  margin: 0;
+  padding: 40px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+.header {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.08);
+  margin-bottom: 30px;
+}
+
+h1 { margin: 0; }
+.subtitle { color:#555; margin-top:8px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 25px;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.07);
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.blue { background:#2563eb; color:white; }
+.green { background:#047857; color:white; }
+
+pre {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.footer {
+  text-align:center;
+  font-size:13px;
+  color:#555;
+  margin-top:30px;
+}
+</style>
 </head>
+
 <body>
-
 <div class="container">
+
+<div class="header">
   <h1>💰 Paisa कमाओ</h1>
-  <p class="subtitle">9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+  <div class="subtitle">9:30 AM High-Risk Intraday Options Insight (Nifty 50)</div>
+</div>
 
-  <div class="grid">
-    <div class="card">
-      <h3>📌 Quick Actions</h3>
-      <button onclick="loadSR()">📊 Support & Resistance</button>
-      <button class="green" onclick="loadTrade()">⏰ 9:30 Trade</button>
+<div class="grid">
+  <div class="card">
+    <h3>📌 Quick Actions</h3>
+    <button class="blue" onclick="getSR()">Support & Resistance</button>
+    <button class="green" onclick="getTrade()">9:30 Trade</button>
 
-      <div class="meta">
-        <p><b>Risk:</b> High</p>
-        <p><b>Time:</b> 9:30 AM – 3:00 PM</p>
-        <p><b>Expiry:</b> 27 Jan 2026</p>
-      </div>
-    </div>
-
-    <div class="card output" id="output">
-      Click a button to generate analysis.
-    </div>
+    <p><b>Risk:</b> High<br>
+    <b>Time:</b> 9:30 – 3:00 PM<br>
+    <b>Expiry:</b> 27 Jan 2026</p>
   </div>
 
-  <p class="footer">Educational purpose only. Options trading involves high risk.</p>
+  <div class="card">
+    <h3>📊 Trade Output</h3>
+    <div id="output">Click a button to generate data.</div>
+  </div>
+</div>
+
+<div class="footer">
+Educational purpose only. Options trading involves high risk.
+</div>
+
 </div>
 
 <script>
-async function loadSR() {
-  const out = document.getElementById("output");
-  out.innerHTML = "Loading support & resistance...";
-  const res = await fetch("/support-resistance");
-  const d = await res.json();
+async function getSR(){
+  const o = document.getElementById("output");
+  o.innerHTML = "Loading...";
+  const r = await fetch("/support-resistance");
+  const d = await r.json();
 
-  out.innerHTML = `
-    <h3>📊 Support & Resistance</h3>
-    <p><b>Spot:</b> ${d.spot}</p>
-    <p><b>Support:</b> ${d.support}</p>
-    <p><b>Resistance:</b> ${d.resistance}</p>
-    <p><i>${d.logic}</i></p>
-  `;
+  o.innerHTML = `
+  <b>Spot:</b> ${d.spot}<br>
+  <b>Support:</b> ${d.support}<br>
+  <b>Resistance:</b> ${d.resistance}<br>
+  <i>${d.logic}</i>`;
 }
 
-async function loadTrade() {
-  const out = document.getElementById("output");
-  out.innerHTML = "Generating 9:30 trade…";
-  const res = await fetch("/nine-thirty-trade");
-  const d = await res.json();
+async function getTrade(){
+  const o = document.getElementById("output");
+  o.innerHTML = "Generating AI Trade…";
 
-  out.innerHTML = `
-    <h3>⏰ 9:30 Trade Report</h3>
-    <p><b>Spot:</b> ${d.spot} | <b>ATM:</b> ${d.atm}</p>
-    <p><b>Generated:</b> ${d.generated}</p>
-    <hr>
-    <pre>${d.report}</pre>
-  `;
+  try{
+    const r = await fetch("/trade-930");
+    const d = await r.json();
+
+    o.innerHTML = `
+    <b>Spot:</b> ${d.spot} | <b>ATM:</b> ${d.atm}<br>
+    <b>Generated:</b> ${d.generated}<hr>
+    <pre>${d.report}</pre>`;
+  }catch{
+    o.innerHTML = "AI service unavailable.";
+  }
 }
 </script>
-
 </body>
 </html>
