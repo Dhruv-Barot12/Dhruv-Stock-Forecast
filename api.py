@@ -1,15 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import yfinance as yf
 from datetime import datetime
+import pytz
 import os
 from openai import OpenAI
 
 app = FastAPI()
 
-# CORS
+# ---------- CORS ----------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,16 +18,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Static frontend
+# ---------- STATIC ----------
 app.mount("/static", StaticFiles(directory="Frontend"), name="static")
 
 @app.get("/")
 def home():
     return FileResponse("Frontend/index.html")
 
-# -----------------------
-# MARKET DATA
-# -----------------------
+# ---------- IST TIME ----------
+def ist_time():
+    tz = pytz.timezone("Asia/Kolkata")
+    return datetime.now(tz).strftime("%d %b %Y, %I:%M %p IST")
+
+# ---------- MARKET DATA ----------
 def get_nifty_data():
     ticker = yf.Ticker("^NSEI")
     hist = ticker.history(period="2d")
@@ -42,91 +46,82 @@ def get_nifty_data():
         "high": high,
         "low": low,
         "atm": atm,
-        "time": datetime.now().strftime("%d %b %Y, %I:%M %p IST")
+        "time": ist_time()
     }
 
-# -----------------------
-# SUPPORT & RESISTANCE
-# -----------------------
+# ---------- SUPPORT / RESISTANCE ----------
 @app.get("/support-resistance")
 def support_resistance():
-    d = get_nifty_data()
+    data = get_nifty_data()
     return {
-        "spot": d["spot"],
-        "support": d["low"],
-        "resistance": d["high"],
+        "spot": data["spot"],
+        "support": data["low"],
+        "resistance": data["high"],
+        "logic": "Day Low = Support | Day High = Resistance",
         "validity": "Intraday",
-        "logic": "Day Low = Support, Day High = Resistance"
+        "generated": data["time"]
     }
 
-# -----------------------
-# 9:30 AI TRADE
-# -----------------------
-@app.get("/trade-930")
-def trade_930():
-    try:
-        d = get_nifty_data()
+# ---------- 9:30 TRADE ----------
+@app.get("/nine-thirty-trade")
+def nine_thirty_trade():
+    data = get_nifty_data()
 
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            raise HTTPException(status_code=500, detail="GROQ_API_KEY missing")
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return {"error": "GROQ_API_KEY not set"}
 
-        client = OpenAI(
-            api_key=api_key,
-            base_url="https://api.groq.com/openai/v1"
-        )
+    client = OpenAI(
+        api_key=api_key,
+        base_url="https://api.groq.com/openai/v1"
+    )
 
-        prompt = f"""
+    prompt = f"""
 You are an expert Indian options trader.
 
-Rules (STRICT):
-- Choose ONLY ONE: BUY CALL OR BUY PUT OR NO TRADE
-- DO NOT mention the other strategies
-- Provide clear probabilities totaling 100%
-
-Market:
-NIFTY Spot: {d['spot']}
-ATM Strike: {d['atm']}
-Support: {d['low']}
-Resistance: {d['high']}
+NIFTY Spot: {data['spot']}
+ATM Strike: {data['atm']}
 Date: 07 Jan 2026
-Time Window: 9:30 AM – 3:00 PM
+Trading Time: 9:30 AM – 3:00 PM IST
 Expiry: 27 Jan 2026 (Monthly)
-Risk: HIGH
+Risk Profile: HIGH
 
-Output FORMAT (strict):
+Rules:
+- Always suggest ONLY ONE strategy (CALL OR PUT OR NO TRADE)
+- NEVER suggest BUY PUT unless clearly dominant
+- Give probabilities totaling 100%
+- If probabilities are unclear → NO TRADE
+
+Return format strictly:
 
 Probabilities:
-Upside: XX%
-Downside: XX%
-Volatile: XX%
+Upside: %
+Downside: %
+Volatile: %
 
 Final Decision: BUY CALL / BUY PUT / NO TRADE
 
-If trade:
+If Trade:
 Strike:
 Estimated Premium (₹):
 Expected Return %:
 Risk %:
 
-Actionable Summary (2 lines max)
+Actionable Summary (2 lines)
 """
 
-        res = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.6,
-            max_tokens=500
-        )
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.6,
+        max_tokens=600
+    )
 
-        report = res.choices[0].message.content.strip()
+    report = response.choices[0].message.content.strip()
 
-        return {
-            "spot": d["spot"],
-            "atm": d["atm"],
-            "generated": d["time"],
-            "report": report
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return {
+        "spot": data["spot"],
+        "atm": data["atm"],
+        "generated": data["time"],
+        "report": report
+    }
