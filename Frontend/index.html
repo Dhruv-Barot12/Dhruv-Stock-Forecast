@@ -3,45 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <title>Paisa कमाओ</title>
-  <link rel="stylesheet" href="style.css">
+
+  <!-- ✅ IMPORTANT FIX -->
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
-  <div class="container">
-    <h1>💰 Paisa कमाओ</h1>
-    <p class="subtitle">9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
-
-    <div class="actions">
-      <button onclick="getSR()">📊 Support & Resistance</button>
-      <button onclick="getTrade()">⏰ 9:30 Trade</button>
+  <div class="page">
+    <div class="card header">
+      <h1>💰 Paisa कमाओ</h1>
+      <p class="subtitle">
+        9:30 AM High-Risk Intraday Options Insight (Nifty 50)
+      </p>
     </div>
 
-    <div id="output" class="output">
-      Click a button to get insights.
+    <div class="grid">
+      <!-- LEFT -->
+      <div class="card actions">
+        <h3>⚡ Quick Actions</h3>
+
+        <button class="btn blue" onclick="getSR()">
+          📊 Support & Resistance
+        </button>
+
+        <button class="btn green" onclick="getTrade()">
+          ⏰ 9:30 Trade
+        </button>
+
+        <div class="info">
+          <p><b>Risk:</b> High</p>
+          <p><b>Time:</b> 9:30 AM – 3:00 PM</p>
+          <p><b>Expiry:</b> 27 Jan 2026 (Monthly)</p>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="card output">
+        <h3>📈 Trade Output</h3>
+        <div id="output">
+          Click a button to generate insights.
+        </div>
+      </div>
     </div>
 
-    <p class="disclaimer">
+    <p class="footer">
       Educational purpose only. Options trading involves high risk.
     </p>
   </div>
 
 <script>
 async function getSR() {
-  output.innerHTML = "Loading...";
+  output.innerHTML = "Loading support & resistance...";
   const r = await fetch("/support-resistance");
   const d = await r.json();
 
   output.innerHTML = `
-    <h3>📊 Support & Resistance</h3>
-    <p><b>Spot:</b> ${d.spot}</p>
-    <p><b>Support:</b> ${d.support}</p>
-    <p><b>Resistance:</b> ${d.resistance}</p>
+    <b>Spot:</b> ${d.spot}<br>
+    <b>Support:</b> ${d.support}<br>
+    <b>Resistance:</b> ${d.resistance}<br>
     <small>${d.logic}</small>
   `;
 }
 
 async function getTrade() {
-  output.innerHTML = "Generating AI trade... (10–20 sec)";
+  output.innerHTML = "Generating 9:30 trade (10–20 sec)...";
   const r = await fetch("/generate-report");
   const d = await r.json();
 
@@ -51,9 +76,8 @@ async function getTrade() {
   }
 
   output.innerHTML = `
-    <h3>⏰ 9:30 Trade Report</h3>
-    <p><b>Spot:</b> ${d.spot} | <b>ATM:</b> ${d.atm}</p>
-    <p><b>Generated:</b> ${d.generated_at}</p>
+    <b>Spot:</b> ${d.spot} | <b>ATM:</b> ${d.atm}<br>
+    <b>Generated:</b> ${d.generated_at}
     <hr>
     <pre>${d.report}</pre>
   `;
