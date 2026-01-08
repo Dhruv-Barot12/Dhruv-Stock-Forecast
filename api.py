@@ -22,7 +22,11 @@ app.mount("/static", StaticFiles(directory="Frontend"), name="static")
 
 @app.get("/")
 def home():
-    return FileResponse("Frontend/index.html")
+    return FileResponse(
+        path="Frontend/index.html",
+        media_type="text/html"
+    )
+
 
 # ------------- DATA --------------------
 
