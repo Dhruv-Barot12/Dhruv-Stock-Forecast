@@ -3,127 +3,117 @@
 <head>
 <meta charset="UTF-8">
 <title>Paisa कमाओ</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body {
-  font-family: system-ui, sans-serif;
-  background: linear-gradient(135deg,#eef2f7,#dbe4f0);
+  font-family: system-ui;
+  background: #eef2f7;
   margin: 0;
-  padding: 30px;
+  padding: 40px;
 }
-
 .container {
   max-width: 1100px;
   margin: auto;
 }
-
 .card {
-  background: white;
-  border-radius: 16px;
+  background: #fff;
+  border-radius: 14px;
   padding: 24px;
-  box-shadow: 0 12px 30px rgba(0,0,0,.08);
-  margin-bottom: 24px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  margin-bottom: 20px;
 }
-
 .grid {
   display: grid;
   grid-template-columns: 1fr 2fr;
-  gap: 24px;
+  gap: 20px;
 }
-
 button {
   width: 100%;
   padding: 14px;
-  font-size: 16px;
-  border-radius: 10px;
   border: none;
+  border-radius: 10px;
+  font-size: 16px;
   cursor: pointer;
 }
-
-.blue { background:#2563eb; color:white; }
-.green { background:#047857; color:white; }
-
-.fixed-note {
-  font-size: 14px;
-  color: #333;
-  text-align: center;
-  margin-top: 40px;
+.blue { background:#2563eb; color:#fff; }
+.green { background:#047857; color:#fff; }
+.notice {
+  background:#f1f5f9;
+  border-left:4px solid #f59e0b;
+  padding:12px;
+  margin-bottom:16px;
 }
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
-<div class="card">
-<h1>💰 Paisa कमाओ</h1>
-<p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
-</div>
+  <div class="card">
+    <h1>💰 Paisa कमाओ</h1>
+    <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+  </div>
 
-<div class="grid">
+  <div class="grid">
+    <div class="card">
+      <h3>📌 Quick Actions</h3>
+      <button class="blue">Support & Resistance</button><br><br>
+      <button class="green" onclick="runTrade()">9:30 Trade</button>
+      <p><b>Risk:</b> High</p>
+      <p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
+      <p><b>Expiry:</b> Monthly</p>
+    </div>
 
-<div class="card">
-<h3>📌 Quick Actions</h3>
-
-<button class="blue" onclick="getSR()">Support & Resistance</button><br><br>
-<button class="green" onclick="getTrade()">9:30 Trade</button>
-
-<p><b>Risk:</b> High</p>
-<p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
-<p><b>Expiry:</b> Monthly 27 Jan 2026</p>
-</div>
-
-<div class="card" id="output">
-Click a button to generate report.
-</div>
-
-</div>
-
-<!-- 🔒 FIXED MESSAGE -->
-<div class="fixed-note">
-👉 <b>English:</b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
-👉 <b>Hindi:</b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
-</div>
+    <div class="card" id="output">
+      <h3>📊 Trade Output</h3>
+      <p>Click the button to generate report.</p>
+    </div>
+  </div>
 
 </div>
 
 <script>
-async function getSR() {
-  const res = await fetch('/support-resistance');
-  const d = await res.json();
-  document.getElementById('output').innerHTML = `
-    <h3>Support & Resistance</h3>
-    Spot: ${d.spot}<br>
-    Support: ${d.support}<br>
-    Resistance: ${d.resistance}
+async function runTrade() {
+  const box = document.getElementById("output");
+  box.innerHTML = "<p>Loading…</p>";
+
+  const res = await fetch("https://stocksscientist.com/trade-930");
+  const data = await res.json();
+
+  let html = `
+    <div class="notice">
+      👉 <b>English:</b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
+      👉 <b>Hindi:</b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
+    </div>
   `;
-}
 
-async function getTrade() {
-  const res = await fetch('/generate-report');
-  const d = await res.json();
-
-  if (d.no_trade) {
-    document.getElementById('output').innerHTML = `
+  if (data.status === "NO_TRADE") {
+    html += `
       <h3>NO TRADE</h3>
-      Generated: ${d.generated}<br>
-      Weekly Expiry: ${d.weekly_expiry}<br>
-      Monthly Expiry: ${d.monthly_expiry}
+      <p><b>Generated:</b> ${data.generated}</p>
+      <p><b>Weekly Expiry:</b> ${data.weekly_expiry}</p>
+      <p><b>Monthly Expiry:</b> ${data.monthly_expiry}</p>
     `;
-    return;
+  } else {
+    html += `
+      <p><b>Spot:</b> ${data.spot} | <b>ATM:</b> ${data.atm}</p>
+      <p><b>Generated:</b> ${data.generated}</p>
+      <p><b>Weekly Expiry:</b> ${data.weekly_expiry}</p>
+      <p><b>Monthly Expiry:</b> ${data.monthly_expiry}</p>
+      <hr>
+      <p><b>Probabilities</b></p>
+      <p>Upside: ${data.probabilities.upside}%</p>
+      <p>Downside: ${data.probabilities.downside}%</p>
+      <p>Volatile: ${data.probabilities.volatile}%</p>
+      <hr>
+      <p><b>Decision:</b> ${data.decision}</p>
+      <p>Strike: ${data.strike}</p>
+      <p>Premium: ₹${data.premium}</p>
+      <p>Expected Return: ${data.expected_return}%</p>
+      <p>Risk: ${data.risk}%</p>
+    `;
   }
 
-  document.getElementById('output').innerHTML = `
-    <h3>Trade Output</h3>
-    Spot: ${d.spot} | ATM: ${d.atm}<br>
-    Generated: ${d.generated}<br>
-    Weekly Expiry: ${d.weekly_expiry}<br>
-    Monthly Expiry: ${d.monthly_expiry}
-    <hr>
-    <pre>${d.report}</pre>
-  `;
+  box.innerHTML = html;
 }
 </script>
 
