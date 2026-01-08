@@ -2,57 +2,201 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Paisa कमाओ</title>
-  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: linear-gradient(135deg, #eef2f7, #dfe7f3);
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 30px;
+    }
+
+    .header {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 36px;
+      font-weight: 700;
+    }
+
+    .header p {
+      margin-top: 8px;
+      color: #475569;
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.07);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 20px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 10px;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      margin-top: 15px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .secondary {
+      background: #0f766e;
+    }
+
+    .secondary:hover {
+      background: #115e59;
+    }
+
+    #output {
+      white-space: pre-wrap;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .highlight {
+      background: #f1f5f9;
+      padding: 12px;
+      border-left: 4px solid #2563eb;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .disclaimer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    @media(max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="card">
-  <h1>💰 Paisa कमाओ</h1>
-  <p class="tagline">9:30 AM High-Risk Intraday Options Insight</p>
+<div class="container">
 
-  <button onclick="getLevels()">📊 Get Support & Resistance</button>
-  <button onclick="getTrade()">⏰ 9:30 Trade</button>
+  <!-- HEADER -->
+  <div class="header">
+    <h1>💰 Paisa कमाओ</h1>
+    <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+  </div>
 
-  <div id="output"></div>
+  <!-- MAIN GRID -->
+  <div class="grid">
 
-  <p class="disclaimer">
+    <!-- LEFT PANEL -->
+    <div class="card">
+      <h2>📌 Quick Actions</h2>
+
+      <button onclick="getSupport()">📊 Support & Resistance</button>
+      <button class="secondary" onclick="getTrade()">⏰ 9:30 Trade</button>
+
+      <div class="highlight" style="margin-top:20px;">
+        Strategy Type: <strong>High Risk</strong><br>
+        Time: <strong>9:30 AM – 3:00 PM</strong><br>
+        Expiry: <strong>27 Jan 2026 (Monthly)</strong>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="card">
+      <h2>📈 Trade Output</h2>
+      <div id="output">Click a button to generate today’s insight.</div>
+    </div>
+
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="disclaimer">
     Educational purpose only. Options trading involves high risk.
-  </p>
+    This is not financial advice.
+  </div>
+
 </div>
 
 <script>
-async function getLevels() {
-  document.getElementById("output").innerHTML = "Loading...";
-  const res = await fetch("/support-resistance");
-  const d = await res.json();
+  async function getSupport() {
+    document.getElementById("output").innerText = "Fetching support & resistance...";
+    try {
+      const res = await fetch("/support-resistance");
+      const data = await res.json();
+      document.getElementById("output").innerHTML = `
+Spot: ${data.spot}
 
-  document.getElementById("output").innerHTML = `
-    <h3>Support & Resistance</h3>
-    Spot: ${d.spot}<br>
-    Support: ${d.support}<br>
-    Resistance: ${d.resistance}
-  `;
-}
+Support: ${data.support}
+Resistance: ${data.resistance}
 
-async function getTrade() {
-  document.getElementById("output").innerHTML = "Analyzing market...";
-  const res = await fetch("/nine-thirty-trade");
-  const d = await res.json();
-
-  if (!d.success) {
-    document.getElementById("output").innerHTML = "AI failed.";
-    return;
+Logic: ${data.logic}
+Validity: ${data.validity}
+`;
+    } catch {
+      document.getElementById("output").innerText = "Failed to fetch data.";
+    }
   }
 
-  document.getElementById("output").innerHTML = `
-    <h3>9:30 Trade Report</h3>
-    Spot: ${d.spot} | ATM: ${d.atm}<br>
-    Generated: ${d.generated_at}
-    <hr>
-    <pre>${d.report}</pre>
-  `;
-}
+  async function getTrade() {
+    document.getElementById("output").innerText = "Generating 9:30 trade insight...";
+    try {
+      const res = await fetch("/generate-report");
+      const data = await res.json();
+      if (!data.success) throw new Error();
+      document.getElementById("output").innerHTML = `
+Spot: ${data.spot}
+ATM: ${data.atm_strike}
+Generated: ${data.generated_at}
+
+${data.report}
+`;
+    } catch {
+      document.getElementById("output").innerText =
+        "AI service unavailable or API limit reached.";
+    }
+  }
 </script>
 
 </body>
