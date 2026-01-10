@@ -1,108 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Paisa कमाओ</title>
-<style>
-body{
-    font-family: Arial, sans-serif;
-    background:#eef2f6;
-}
-.container{
-    max-width:1100px;
-    margin:30px auto;
-}
-.card{
-    background:#fff;
-    border-radius:14px;
-    padding:20px;
-    box-shadow:0 8px 25px rgba(0,0,0,0.08);
-}
-.flex{
-    display:flex;
-    gap:20px;
-}
-.btn{
-    padding:12px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    color:#fff;
-    font-weight:bold;
-}
-.blue{background:#2563eb;}
-.green{background:#047857;}
-.notice{
-    background:#fff3cd;
-    padding:10px;
-    border-radius:8px;
-    margin-bottom:10px;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Paisa कमाओ</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
-
 <body>
+
 <div class="container">
 
-<div class="card">
-<h1>💰 Paisa कमाओ</h1>
-<p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+  <div class="header">
+    <h1>💰 Paisa कमाओ</h1>
+    <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <h3>📌 Quick Actions</h3>
+      <button id="srBtn">Support & Resistance</button>
+      <button id="tradeBtn">9:30 Trade</button>
+
+      <p><b>Risk:</b> High</p>
+      <p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
+      <p><b>Expiry:</b> Monthly</p>
+    </div>
+
+    <div class="card">
+      <div class="alert">
+        </b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
+        </b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
+      </div>
+
+      <h3>📊 Trade Output</h3>
+      <pre id="output">Click "9:30 Trade"</pre>
+    </div>
+
+  </div>
+
 </div>
 
-<div class="flex" style="margin-top:20px;">
-
-<div class="card" style="width:35%;">
-<h3>📌 Quick Actions</h3>
-<button class="btn blue" onclick="loadSR()">Support & Resistance</button><br><br>
-<button class="btn green" onclick="loadTrade()">9:30 Trade</button>
-
-<p><b>Risk:</b> High</p>
-<p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
-<p><b>Expiry:</b> Monthly 27 Jan 2026</p>
-</div>
-
-<div class="card" style="width:65%;">
-<div class="notice">
-👉 <b>English:</b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
-👉 <b>Hindi:</b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
-</div>
-
-<h3>📊 Trade Output</h3>
-<pre id="output">Click a button to generate report.</pre>
-</div>
-
-</div>
-</div>
-
-<script>
-async function loadTrade(){
-    const r = await fetch("/api/trade");
-    const d = await r.json();
-    document.getElementById("output").textContent =
-`Spot: ${d.spot}
-ATM: ${d.atm}
-
-Generated: ${d.generated}
-Weekly Expiry: ${d.weekly_expiry}
-Monthly Expiry: ${d.monthly_expiry}
-
-Final Decision: ${d.decision}
-Premium: ₹${d.premium}
-Expected Return: ${d.expected_return}
-Risk: ${d.risk}
-
-Actionable Summary:
-${d.actionable_summary}`;
-}
-
-async function loadSR(){
-    const r = await fetch("/api/support-resistance");
-    const d = await r.json();
-    document.getElementById("output").textContent =
-`Support Level: ${d.support}
-Resistance Level: ${d.resistance}`;
-}
-</script>
-
+<script src="/static/app.js"></script>
 </body>
 </html>
