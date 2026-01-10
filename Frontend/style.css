@@ -1,43 +1,53 @@
 body {
-  font-family: Arial, sans-serif;
-  background: #eef2f7;
-  padding: 30px;
+    font-family: Arial, sans-serif;
+    background: #f3f6fb;
+    padding: 30px;
+}
+
+.subtitle {
+    margin-bottom: 20px;
+}
+
+.warning {
+    background: #ffe08a;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    max-width: 700px;
 }
 
 .container {
-  display: flex;
-  gap: 30px;
+    display: flex;
+    gap: 20px;
 }
 
-.left, .right {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 260px;
 }
 
-.left {
-  width: 250px;
+.card.wide {
+    width: 600px;
 }
 
 button {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: white;
-  cursor: pointer;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: #2f5bea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
-.notice {
-  background: #fde68a;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 10px;
+button:hover {
+    background: #1f45c5;
 }
 
 pre {
-  white-space: pre-wrap;
-  font-family: monospace;
+    white-space: pre-wrap;
+    font-family: Consolas, monospace;
 }
