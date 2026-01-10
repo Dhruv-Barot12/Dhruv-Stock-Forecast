@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from datetime import datetime
 import pytz
+import os
 
 app = FastAPI()
-
 IST = pytz.timezone("Asia/Kolkata")
 
 def ist_now():
@@ -12,7 +12,8 @@ def ist_now():
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    with open("index.html", "r", encoding="utf-8") as f:
+    path = os.path.join(os.path.dirname(__file__), "index.html")
+    with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
 @app.get("/api/trade")
