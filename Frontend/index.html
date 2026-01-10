@@ -7,34 +7,35 @@
 </head>
 <body>
 
+<div class="header">
+  <h1>💰 Paisa कमाओ</h1>
+  <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+</div>
+
 <div class="container">
 
-  <div class="header">
-    <h1>💰 Paisa कमाओ</h1>
-    <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+  <div class="left">
+    <h3>📌 Quick Actions</h3>
+
+    <button onclick="supportResistance()">Support & Resistance</button>
+    <button onclick="getTrade()">9:30 Trade</button>
+
+    <p><b>Risk:</b> High</p>
+    <p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
+    <p><b>Expiry:</b> Monthly</p>
   </div>
 
-  <div class="grid">
+  <div class="right">
 
-    <div class="card">
-      <h3>📌 Quick Actions</h3>
-      <button id="srBtn">Support & Resistance</button>
-      <button id="tradeBtn">9:30 Trade</button>
-
-      <p><b>Risk:</b> High</p>
-      <p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
-      <p><b>Expiry:</b> Monthly</p>
+    <!-- PROMPT RULE (FIXED POSITION) -->
+    <div class="note">
+    </b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
+    </b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
     </div>
 
-    <div class="card">
-      <div class="alert">
-        </b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
-        </b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
-      </div>
+    <h3>📊 Trade Output</h3>
 
-      <h3>📊 Trade Output</h3>
-      <pre id="output">Click "9:30 Trade"</pre>
-    </div>
+    <pre id="output">Click “9:30 Trade” to generate report.</pre>
 
   </div>
 
