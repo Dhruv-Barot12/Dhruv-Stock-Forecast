@@ -1,27 +1,131 @@
-function getTrade() {
-  fetch(API + "/trade")
-  .then(res => res.json())
-  .then(d => {
-document.getElementById("output").innerText =
-`Spot: ${d.spot} | ATM: ${d.atm}
-Generated: ${d.generated}
-Weekly Expiry: ${d.weekly_expiry}
-Monthly Expiry: ${d.monthly_expiry}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Paisa कमाओ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-Probabilities:
-Upside: ${d.probabilities.upside}%
-Downside: ${d.probabilities.downside}%
-Volatile: ${d.probabilities.volatile}%
-
-Final Decision: ${d.decision}
-
-If Trade:
-Strike: ${d.trade.strike}
-Estimated Premium (₹): ${d.trade.premium}
-Expected Return %: ${d.trade.expected_return}
-Risk %: ${d.trade.risk}
-
-Actionable Summary:
-${d.actionable_summary}`;
-  });
+<style>
+body {
+  font-family: system-ui, sans-serif;
+  background: linear-gradient(135deg,#eef2f7,#dbe4f0);
+  margin: 0;
+  padding: 30px;
 }
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.08);
+  margin-bottom: 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+.blue { background:#2563eb; color:white; }
+.green { background:#047857; color:white; }
+
+.fixed-note {
+  font-size: 14px;
+  color: #333;
+  text-align: center;
+  margin-top: 40px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+<h1>💰 Paisa कमाओ</h1>
+<p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+</div>
+
+<div class="grid">
+
+<div class="card">
+<h3>📌 Quick Actions</h3>
+
+<button class="blue" onclick="getSR()">Support & Resistance</button><br><br>
+<button class="green" onclick="getTrade()">9:30 Trade</button>
+
+<p><b>Risk:</b> High</p>
+<p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
+<p><b>Expiry:</b> Monthly 27 Jan 2026</p>
+</div>
+
+<div class="card" id="output">
+Click a button to generate report.
+</div>
+
+</div>
+
+<!-- 🔒 FIXED MESSAGE -->
+<div class="fixed-note">
+👉 <b>English:</b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
+👉 <b>Hindi:</b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
+</div>
+
+</div>
+
+<script>
+async function getSR() {
+  const res = await fetch('/support-resistance');
+  const d = await res.json();
+  document.getElementById('output').innerHTML = `
+    <h3>Support & Resistance</h3>
+    Spot: ${d.spot}<br>
+    Support: ${d.support}<br>
+    Resistance: ${d.resistance}
+  `;
+}
+
+async function getTrade() {
+  const res = await fetch('/generate-report');
+  const d = await res.json();
+
+  if (d.no_trade) {
+    document.getElementById('output').innerHTML = `
+      <h3>NO TRADE</h3>
+      Generated: ${d.generated}<br>
+      Weekly Expiry: ${d.weekly_expiry}<br>
+      Monthly Expiry: ${d.monthly_expiry}
+    `;
+    return;
+  }
+
+  document.getElementById('output').innerHTML = `
+    <h3>Trade Output</h3>
+    Spot: ${d.spot} | ATM: ${d.atm}<br>
+    Generated: ${d.generated}<br>
+    Weekly Expiry: ${d.weekly_expiry}<br>
+    Monthly Expiry: ${d.monthly_expiry}
+    <hr>
+    <pre>${d.report}</pre>
+  `;
+}
+</script>
+
+</body>
+</html>
