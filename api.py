@@ -1,33 +1,48 @@
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from datetime import datetime, timedelta
 import pytz
+import os
 
 app = FastAPI()
 
+# Serve frontend static files
+app.mount("/static", StaticFiles(directory="Frontend"), name="static")
+
 IST = pytz.timezone("Asia/Kolkata")
 
+# -------------------------------
+# Homepage route (THIS FIXES 404)
+# -------------------------------
+@app.get("/")
+def serve_frontend():
+    return FileResponse("Frontend/index.html")
+
+# -------------------------------
+# Utility functions
+# -------------------------------
 def get_weekly_expiry(today):
-    # Thursday expiry
-    days_ahead = 3 - today.weekday()
+    days_ahead = 3 - today.weekday()  # Thursday
     if days_ahead <= 0:
         days_ahead += 7
     return today + timedelta(days=days_ahead)
 
 def get_monthly_expiry(today):
-    # Last Thursday of month
     next_month = today.replace(day=28) + timedelta(days=4)
     last_day = next_month - timedelta(days=next_month.day)
     while last_day.weekday() != 3:
         last_day -= timedelta(days=1)
     return last_day
 
+# -------------------------------
+# Trade API
+# -------------------------------
 @app.get("/trade")
 def trade_output():
     now = datetime.now(IST)
-    time_ok = now.strftime("%H:%M") >= "09:20" and now.strftime("%H:%M") <= "09:28"
 
-    if not time_ok:
+    if not ("09:20" <= now.strftime("%H:%M") <= "09:28"):
         return JSONResponse(
             status_code=403,
             content={"error": "This prompt should be executed only between 9:20 AM and 9:28 AM."}
@@ -54,3 +69,4 @@ def trade_output():
             "Strict stop-loss discipline is advised."
         )
     }
+
