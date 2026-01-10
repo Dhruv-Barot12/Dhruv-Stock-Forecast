@@ -1,106 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Paisa कमाओ</title>
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #eef2f7;
-  margin: 0;
-  padding: 30px;
+function getTrade() {
+  fetch(API + "/trade")
+  .then(res => res.json())
+  .then(d => {
+document.getElementById("output").innerText =
+`Spot: ${d.spot} | ATM: ${d.atm}
+Generated: ${d.generated}
+Weekly Expiry: ${d.weekly_expiry}
+Monthly Expiry: ${d.monthly_expiry}
+
+Probabilities:
+Upside: ${d.probabilities.upside}%
+Downside: ${d.probabilities.downside}%
+Volatile: ${d.probabilities.volatile}%
+
+Final Decision: ${d.decision}
+
+If Trade:
+Strike: ${d.trade.strike}
+Estimated Premium (₹): ${d.trade.premium}
+Expected Return %: ${d.trade.expected_return}
+Risk %: ${d.trade.risk}
+
+Actionable Summary:
+${d.actionable_summary}`;
+  });
 }
-
-.container {
-  max-width: 1100px;
-  margin: auto;
-}
-
-.card {
-  background: white;
-  border-radius: 14px;
-  padding: 25px;
-  margin-bottom: 20px;
-}
-
-.flex {
-  display: flex;
-  gap: 20px;
-}
-
-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.blue { background: #2563eb; color: white; }
-.green { background: #047857; color: white; }
-
-.notice {
-  background: #fef3c7;
-  padding: 12px;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  font-size: 14px;
-}
-</style>
-</head>
-
-<body>
-<div class="container">
-
-  <div class="card">
-    <h1>💰 Paisa कमाओ</h1>
-    <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
-  </div>
-
-  <div class="flex">
-    <div class="card" style="width:35%">
-      <h3>📌 Quick Actions</h3>
-      <button class="blue">Support & Resistance</button><br><br>
-      <button class="green" onclick="loadTrade()">9:30 Trade</button>
-
-      <p><b>Risk:</b> High</p>
-      <p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
-    </div>
-
-    <div class="card" style="width:65%">
-      <div class="notice">
-        👉 <b>English:</b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
-        👉 <b>Hindi:</b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
-      </div>
-
-      <h3>📊 Trade Output</h3>
-      <pre id="output">Click on "9:30 Trade"</pre>
-    </div>
-  </div>
-
-</div>
-
-<script>
-function loadTrade() {
-  fetch("/trade")
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById("output").innerText =
-`Spot: ${data.spot}
-ATM: ${data.atm}
-
-Generated: ${data.generated}
-Weekly Expiry: ${data.weekly_expiry}
-Monthly Expiry: ${data.monthly_expiry}
-
-Final Decision: ${data.decision}
-Premium: ₹${data.premium}
-Expected Return: ${data.expected_return}
-Risk: ${data.risk}`;
-    });
-}
-</script>
-
-</body>
-</html>
