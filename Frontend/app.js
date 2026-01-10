@@ -1,9 +1,13 @@
-document.getElementById("tradeBtn").onclick = async () => {
+function supportResistance() {
+  alert("Support & Resistance feature coming soon.");
+}
+
+async function getTrade() {
   const res = await fetch("/trade");
   const data = await res.json();
 
-  document.getElementById("output").innerText = `
-Spot: ${data.spot}
+  document.getElementById("output").innerText =
+`Spot: ${data.spot}
 ATM: ${data.atm}
 
 Generated: ${data.generated}
@@ -16,10 +20,5 @@ Expected Return: ${data.expected_return}
 Risk: ${data.risk}
 
 Actionable Summary:
-${data.actionable_summary}
-`;
-};
-
-document.getElementById("srBtn").onclick = () => {
-  alert("Support & Resistance feature coming soon.");
-};
+${data.summary}`;
+}
