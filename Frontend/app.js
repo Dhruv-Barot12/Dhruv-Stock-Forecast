@@ -1,13 +1,18 @@
-function supportResistance() {
-  alert("Support & Resistance feature coming soon.");
-}
+const API = "/trade";
 
-async function getTrade() {
-  const res = await fetch("/trade");
+async function loadTrade() {
+  const res = await fetch(API);
   const data = await res.json();
 
+  if (data.error) {
+    document.getElementById("output").innerText = data.error;
+    return;
+  }
+
   document.getElementById("output").innerText =
-`Spot: ${data.spot}
+`📊 Trade Output
+
+Spot: ${data.spot}
 ATM: ${data.atm}
 
 Generated: ${data.generated}
@@ -21,4 +26,23 @@ Risk: ${data.risk}
 
 Actionable Summary:
 ${data.summary}`;
+}
+
+async function loadSupport() {
+  const res = await fetch(API);
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("output").innerText = data.error;
+    return;
+  }
+
+  document.getElementById("output").innerText =
+`📈 Support & Resistance
+
+Support Levels:
+- ${data.support.join("\n- ")}
+
+Resistance Levels:
+- ${data.resistance.join("\n- ")}`;
 }
