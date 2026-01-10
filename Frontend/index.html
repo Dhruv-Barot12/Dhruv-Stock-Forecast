@@ -3,101 +3,44 @@
 <head>
     <meta charset="UTF-8" />
     <title>Paisa कमाओ</title>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- CSS -->
-    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <!-- Header -->
-    <div class="header">
-        <h1>💰 Paisa कमाओ</h1>
-        <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+    <h1>💰 Paisa कमाओ</h1>
+    <p class="subtitle">9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+
+    <!-- Warning -->
+    <div class="warning">
+        This prompt should be executed only between <b>9:20 AM</b> and <b>9:28 AM</b>.<br>
+        यह प्रॉम्प्ट केवल सुबह <b>9:20 बजे</b> से <b>9:28 बजे</b> के बीच ही चलाया जाना चाहिए।
     </div>
 
-    <!-- Main Container -->
     <div class="container">
 
-        <!-- Left Card -->
-        <div class="card left-card">
+        <!-- LEFT PANEL -->
+        <div class="card">
             <h3>📌 Quick Actions</h3>
 
-            <button class="btn blue" onclick="showSupportResistance()">
-                Support & Resistance
-            </button>
+            <button id="srBtn">Support & Resistance</button>
+            <button id="tradeBtn">9:30 Trade</button>
 
-            <button class="btn green" onclick="loadTrade()">
-                9:30 Trade
-            </button>
-
-            <div class="info">
-                <p><strong>Risk:</strong> High</p>
-                <p><strong>Time:</strong> 9:30 AM – 3:00 PM IST</p>
-                <p><strong>Expiry:</strong> Monthly</p>
-            </div>
+            <p><b>Risk:</b> High</p>
+            <p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
+            <p><b>Expiry:</b> Monthly</p>
         </div>
 
-        <!-- Right Card -->
-        <div class="card right-card">
-
-            <!-- Timing Notice -->
-            <div class="notice">
-                This prompt should be executed only between 9:20 AM and 9:28 AM.<br />
-                यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
-            </div>
-
+        <!-- RIGHT PANEL -->
+        <div class="card wide">
             <h3>📊 Trade Output</h3>
 
             <pre id="output">
-Click "9:30 Trade" to generate today's setup.
+Click a button to generate output.
             </pre>
-
         </div>
+
     </div>
 
-    <!-- JS -->
-    <script src="/static/app.js"></script>
-
-    <script>
-        function showSupportResistance() {
-            alert("Support & Resistance feature coming soon.");
-        }
-
-        async function loadTrade() {
-            const output = document.getElementById("output");
-            output.textContent = "Loading...";
-
-            try {
-                const res = await fetch("/trade");
-                const data = await res.json();
-
-                if (data.error) {
-                    output.textContent = data.error;
-                    return;
-                }
-
-                output.textContent =
-`Spot: ${data.spot}
-ATM: ${data.atm}
-
-Generated: ${data.generated}
-Weekly Expiry: ${data.weekly_expiry}
-Monthly Expiry: ${data.monthly_expiry}
-
-Final Decision: ${data.decision}
-Premium: ₹${data.premium}
-Expected Return: ${data.expected_return}
-Risk: ${data.risk}
-
-Actionable Summary:
-${data.summary}`;
-            } catch (err) {
-                output.textContent = "Server error. Please try again.";
-            }
-        }
-    </script>
-
+    <script src="app.js"></script>
 </body>
 </html>
