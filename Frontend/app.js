@@ -1,37 +1,33 @@
-const output = document.getElementById("output");
+async function loadTrade() {
+    const res = await fetch("/api/trade");
+    const d = await res.json();
 
-document.getElementById("srBtn").addEventListener("click", () => {
-    alert("Support & Resistance feature coming soon.");
+    document.getElementById("output").innerHTML = `
+        <h3>📊 Trade Output</h3>
+        Spot: ${d.spot}<br>
+        ATM: ${d.atm}<br><br>
 
-    output.textContent = `
-Support & Resistance
+        Generated: ${d.generated}<br>
+        Weekly Expiry: ${d.weekly_expiry}<br>
+        Monthly Expiry: ${d.monthly_expiry}<br><br>
 
-• Support: 25720 – 25740
-• Resistance: 25980 – 26020
+        Final Decision: ${d.decision}<br>
+        Premium: ₹${d.premium}<br>
+        Expected Return: ${d.expected_return}<br>
+        Risk: ${d.risk}<br><br>
 
-Note:
-This level is for reference only.
-`;
-});
+        <b>Actionable Summary:</b><br>
+        ${d.summary}
+    `;
+}
 
-document.getElementById("tradeBtn").addEventListener("click", () => {
-    output.textContent = `
-Spot: 25876.85
-ATM: 25900
+async function loadSR() {
+    const res = await fetch("/api/support-resistance");
+    const d = await res.json();
 
-Generated: ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
-
-Weekly Expiry: 16 Jan 2026
-Monthly Expiry: 27 Jan 2026
-
-Final Decision: BUY CALL
-Premium: ₹420
-Expected Return: 15%
-Risk: High
-
-Actionable Summary:
-Buy NIFTY 25900 CALL for a potential 15% return.
-This is a high-risk intraday setup based on momentum.
-Strict stop-loss discipline is advised.
-`;
-});
+    document.getElementById("output").innerHTML = `
+        <h3>📌 Support & Resistance</h3>
+        Support: ${d.support.join(", ")}<br>
+        Resistance: ${d.resistance.join(", ")}
+    `;
+}
