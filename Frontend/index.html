@@ -3,22 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>Paisa कमाओ</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="header">
-  <h1>💰 Paisa कमाओ</h1>
-  <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
-</div>
+<h1>💰 Paisa कमाओ</h1>
+<p class="subtitle">9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
 
 <div class="container">
-
   <div class="left">
     <h3>📌 Quick Actions</h3>
-
-    <button onclick="supportResistance()">Support & Resistance</button>
-    <button onclick="getTrade()">9:30 Trade</button>
+    <button onclick="loadSupport()">Support & Resistance</button>
+    <button onclick="loadTrade()">9:30 Trade</button>
 
     <p><b>Risk:</b> High</p>
     <p><b>Time:</b> 9:30 AM – 3:00 PM IST</p>
@@ -26,21 +22,15 @@
   </div>
 
   <div class="right">
-
-    <!-- PROMPT RULE (FIXED POSITION) -->
-    <div class="note">
-    </b> This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
-    </b> यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
+    <div class="notice">
+      This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
+      यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
     </div>
 
-    <h3>📊 Trade Output</h3>
-
-    <pre id="output">Click “9:30 Trade” to generate report.</pre>
-
+    <pre id="output">Click “9:30 Trade” to generate signal.</pre>
   </div>
-
 </div>
 
-<script src="/static/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
