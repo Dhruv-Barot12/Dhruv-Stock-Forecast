@@ -1,29 +1,42 @@
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f7fb;
-    padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #f4f7fb;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 5px;
 }
 
 .alert {
-    background: #ffe08a;
-    padding: 10px;
-    margin: 15px 0;
-    border-radius: 6px;
+  background: #ffe08a;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 15px 0;
 }
 
-.actions button {
-    padding: 10px 15px;
-    margin-right: 10px;
-    background: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
+.buttons button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  margin-right: 10px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-#output {
-    background: white;
-    padding: 15px;
-    margin-top: 20px;
-    border-radius: 8px;
+.buttons button:hover {
+  background: #1e40af;
+}
+
+.box {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+pre {
+  white-space: pre-wrap;
+  font-size: 14px;
 }
