@@ -1,27 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Paisa कमाओ</title>
-<link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8" />
+  <title>Paisa कमाओ</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
-<h1>💰 Paisa कमाओ</h1>
-<p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
 
-<div class="alert">
-This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
-यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
-</div>
+  <h1>💰 Paisa कमाओ</h1>
+  <p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
 
-<div class="actions">
-<button onclick="loadSR()">Support & Resistance</button>
-<button onclick="loadTrade()">9:30 Trade</button>
-</div>
+  <div class="alert">
+    This prompt should be executed only between 9:20 AM and 9:28 AM.
+    <br />
+    यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
+  </div>
 
-<div id="output"></div>
+  <div class="buttons">
+    <button onclick="showSR()">Support & Resistance</button>
+    <button onclick="loadTrade()">9:30 Trade</button>
+  </div>
 
-<script src="/static/app.js"></script>
+  <div class="box">
+    <h2>📊 Trade Output</h2>
+    <pre id="trade-output">Click “9:30 Trade” to load data.</pre>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
