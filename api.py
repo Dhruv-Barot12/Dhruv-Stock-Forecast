@@ -7,23 +7,26 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+@app.get("/")
+def root():
+    return {"status": "API running"}
+
 @app.get("/trade")
-def trade_output():
-    today = datetime.now().strftime("%d %B %Y")
+def trade():
+    today = datetime.now().strftime("%d January %Y")
+    generated = datetime.now().strftime("%d %B %Y, %I:%M %p IST")
 
     return {
         "spot": 25876.85,
         "atm": 25900,
-        "generated": datetime.now().strftime("%d %B %Y, %I:%M %p IST"),
+        "generated": generated,
         "weekly_expiry": "16 January 2026",
         "monthly_expiry": "27 January 2026",
-
-        "strategy_text": f"""
+        "output": f"""
 1- Buying Put options only (near ATM)
 
 Recommended strike: 25900 PE or 25800 PE (whichever is closer to spot at entry)
@@ -46,7 +49,3 @@ Recommended strategy today:
 • Do not buy both today (directional bias clear)
 """
     }
-
-@app.get("/")
-def root():
-    return {"status": "API running"}
