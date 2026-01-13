@@ -1,7 +1,4 @@
 fastapi
-uvicorn[standard]
-requests
-openai
-yfinance
+uvicorn
 pytz
 python-dateutil
