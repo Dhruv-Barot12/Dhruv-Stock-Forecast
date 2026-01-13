@@ -1,106 +1,58 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from datetime import datetime, timezone, timedelta
-import yfinance as yf
-import math
+@app.get("/api/options-report")
+def options_report():
+    try:
+        # Fetch real-time Nifty data
+        ticker = yf.Ticker("^NSEI")
+        hist = ticker.history(period="1d")
+        today = hist.iloc[-1]
+        spot = round(today['Close'], 2)
+        day_high = round(today['High'], 2)
+        day_low = round(today['Low'], 2)
+        atm_strike = round(spot / 50) * 50
 
-app = FastAPI()
+        # Get Groq API key
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            return {"error": "GROQ_API_KEY not set"}
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+        client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
 
-# Serve frontend
-app.mount("/static", StaticFiles(directory="Frontend"), name="static")
+        prompt = f"""You are an expert financial analyst specializing in the Indian equity and derivatives markets, especially Nifty 50 options. The current Nifty 50 index level is {spot}. Using a combination of:
+  • Technical analysis (candlestick patterns, intraday indicators, support/resistance, implied volatility, option Greeks, etc.)
+  • Fundamental analysis (macroeconomic cues, FII/DII flows, sectoral news, global markets impact)
+  • Real-time news sentiment (headlines, corporate announcements, RBI commentary, geopolitical developments)
+produce a short report with intraday probability estimates (in percentages) for whether Nifty 50 will move:
+  1. Upside
+  2. Downside
+  3. volatile market ( market maybe goes big up or down)
+Specifically:
+  1. Starting from the current index level of {spot}, calculate the probability (in %) that the index will finish the trading day higher, lower, or roughly flat. Clearly state your assumptions (e.g., what technical patterns or news you’re emphasizing).
+  2. Based on those probabilities, recommend which option-buying near ATM call and put is likely to yield the highest expected profit today:
+Buying call options only near ATM
+Buying put options only near ATM
+     For each strategy, estimate the expected return (percentage) and mention any major risks (e.g., sudden volatility spikes, unexpected news).
+I want to trade between 9:30 am and 3:00 pm. Let’s assume a high-risk approach. I will take the January monthly expiry, which will be 27th January monthly 2026.
+At the end, provide a concise “Actionable Summary”:
+  • Which specific strategy should I execute today, 07th Jan 2026—buy calls, buy puts or both buy?
+  • Which strike(s) would you choose if you were trading intraday?
+  • Approximately what premium (₹) and probability (%) does each recommended position carry?"""
 
-@app.get("/")
-def serve_index():
-    return FileResponse("Frontend/index.html")
+        response = client.chat.completions.create(
+            model="llama-3.1-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=800
+        )
+        report = response.choices[0].message.content
 
-def ist_now():
-    return datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=5, minutes=30)))
-
-def round_to_50(x):
-    return int(round(x / 50.0) * 50)
-
-@app.get("/trade")
-def trade():
-    # --- Fetch live-ish data from Yahoo Finance ---
-    ticker = yf.Ticker("^NSEI")
-    hist = ticker.history(period="2d", interval="1d")
-
-    if hist.empty or len(hist) < 2:
-        return {"error": "Market data unavailable"}
-
-    prev = hist.iloc[-2]
-    today = hist.iloc[-1]
-
-    spot = float(today["Close"])
-    open_px = float(today["Open"])
-    high = float(today["High"])
-    low = float(today["Low"])
-    prev_close = float(prev["Close"])
-
-    gap = spot - prev_close
-    day_range = high - low
-    atm = round_to_50(spot)
-
-    # --- Simple, explainable rule engine ---
-    bias = "Neutral"
-    final_decision = "NO TRADE"
-
-    if gap < -60 and spot < open_px:
-        bias = "Bearish"
-        final_decision = "BUY PUT"
-    elif gap > 60 and spot > open_px:
-        bias = "Bullish"
-        final_decision = "BUY CALL"
-    elif day_range < 120:
-        bias = "Range-bound"
-        final_decision = "NO TRADE"
-
-    # --- Expiry text (static but correct calendar-wise) ---
-    weekly_expiry = "Next Thursday (Weekly)"
-    monthly_expiry = "27 January 2026 (Monthly)"
-
-    # --- Strategy text (both scenarios shown) ---
-    text = f"""
-Market Snapshot
-• NIFTY Spot: {spot:.2f}
-• Previous Close: {prev_close:.2f}
-• Gap: {gap:+.2f}
-• Day Range (H-L): {day_range:.0f}
-• Bias: {bias}
-
-1- Buying Put options only (near ATM)
-Recommended strike: {atm} PE or {atm-100} PE
-Expected move: 180–350 points (if downside accelerates)
-Volatility expectation: Moderate to High
-Use when: Weak price below open, sustained selling pressure
-
-2- Buying Call options only (near ATM)
-Recommended strike: {atm} CE or {atm+100} CE
-Expected move: 120–280 points (requires strength)
-Volatility expectation: Moderate
-Use when: Strong reclaim above open with follow-through
-
-Actionable Summary – {ist_now().strftime('%d %B %Y')}
-• Final Decision: {final_decision}
-• Reason: {bias} conditions based on gap, open relation, and range
-• Trading Window: 9:30 AM – 3:00 PM IST
-• Expiry: Weekly ({weekly_expiry}) | Monthly ({monthly_expiry})
-"""
-
-    return {
-        "spot": round(spot, 2),
-        "atm": atm,
-        "generated_at": ist_now().strftime("%d %B %Y, %I:%M %p IST"),
-        "weekly_expiry": weekly_expiry,
-        "monthly_expiry": monthly_expiry,
-        "output": text.strip()
-    }
+        return {
+            "success": True,
+            "spot": spot,
+            "day_high": day_high,
+            "day_low": day_low,
+            "atm_strike": atm_strike,
+            "report": report,
+            "generated_at": datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d %b %Y, %I:%M %p IST")
+        }
+    except Exception as e:
+        return {"error": f"Report failed: {str(e)}"}
