@@ -1,4 +1,4 @@
 fastapi
 uvicorn
-pytz
-python-dateutil
+yfinance
+pandas
