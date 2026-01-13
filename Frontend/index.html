@@ -1,27 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Paisa कमाओ</title>
-<link rel="stylesheet" href="/static/style.css">
-</head>
-
-<body>
-<h1>💰 Paisa कमाओ</h1>
-<p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
-
-<div class="alert">
-This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
-यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
-</div>
-
-<div class="actions">
-<button onclick="loadSR()">Support & Resistance</button>
-<button onclick="loadTrade()">9:30 Trade</button>
-</div>
+<button onclick="load930()">9:30 Probability</button>
 
 <div id="output"></div>
 
-<script src="/static/app.js"></script>
-</body>
-</html>
+<script>
+async function load930() {
+  const res = await fetch("/probability-930");
+  const data = await res.json();
+
+  if (data.error) {
+    document.getElementById("output").innerText = data.error;
+    return;
+  }
+
+  document.getElementById("output").innerHTML = `
+    <h3>${data.title}</h3>
+    <p><b>Reference Level:</b> ${data.reference_level}</p>
+    <p>Upside: ${data.upside}</p>
+    <p>Downside: ${data.downside}</p>
+    <p>Roughly Flat: ${data.flat}</p>
+    <p>High Volatility: ${data.volatility}</p>
+    <small>Generated: ${data.generated_at}</small>
+  `;
+}
+</script>
