@@ -1,13 +1,11 @@
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-import datetime
-import pytz
+from fastapi.responses import FileResponse
+import yfinance as yf
+from datetime import datetime, timezone, timedelta
 
 app = FastAPI()
 
-# CORS (safe)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,42 +13,52 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve static files
-app.mount("/static", StaticFiles(directory="Frontend"), name="static")
-
-# Root → index.html
 @app.get("/")
-def serve_home():
-    return FileResponse("Frontend/index.html")
+def home():
+    return FileResponse("index.html")
 
-# API for trade data
-@app.get("/api/trade")
-def trade_output():
-    ist = pytz.timezone("Asia/Kolkata")
-    now = datetime.datetime.now(ist)
+def ist_now():
+    return datetime.now(timezone.utc).astimezone(
+        timezone(timedelta(hours=5, minutes=30))
+    )
+
+@app.get("/probability-930")
+def probability_930():
+    ticker = yf.Ticker("^NSEI")
+    data = ticker.history(period="6d", interval="1d")
+
+    if data.empty or len(data) < 2:
+        return {"error": "Market data unavailable"}
+
+    today = data.iloc[-1]
+    prev = data.iloc[-2]
+
+    spot = round(float(today["Close"]), 2)
+    prev_close = float(prev["Close"])
+    gap_pct = (spot - prev_close) / prev_close * 100
+
+    # --- Simple, honest probability engine ---
+    upside = 40
+    downside = 40
+    flat = 20
+    volatility = 30
+
+    if gap_pct > 0.5:
+        upside += 5
+        flat -= 5
+    elif gap_pct < -0.5:
+        downside += 5
+        flat -= 5
+
+    if abs(gap_pct) > 1:
+        volatility = 45
 
     return {
-        "spot": 25876.85,
-        "atm": 25900,
-        "generated": now.strftime("%d %b %Y, %I:%M %p IST"),
-        "weekly_expiry": "16 Jan 2026",
-        "monthly_expiry": "27 Jan 2026",
-        "decision": "BUY CALL",
-        "premium": 420,
-        "expected_return": "15%",
-        "risk": "High",
-        "summary": (
-            "Buy NIFTY 25900 CALL for a potential 15% return. "
-            "This is a high-risk intraday setup based on momentum. "
-            "Strict stop-loss discipline is advised."
-        )
+        "title": "Intraday Probability Outlook — NIFTY 50 (9:30 AM)",
+        "reference_level": spot,
+        "upside": f"{upside}%",
+        "downside": f"{downside}%",
+        "flat": f"{flat}%",
+        "volatility": f"{volatility}%",
+        "generated_at": ist_now().strftime("%d %B %Y, %I:%M %p IST")
     }
-
-# Support & Resistance (button fix)
-@app.get("/api/support-resistance")
-def support_resistance():
-    return {
-        "support": [25750, 25680],
-        "resistance": [26020, 26100]
-    }
-
