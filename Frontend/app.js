@@ -1,24 +1,29 @@
-document.getElementById("loadBtn").addEventListener("click", loadData);
+document.getElementById("loadBtn").addEventListener("click", async () => {
+    const box = document.getElementById("output");
+    box.style.display = "block";
+    box.innerHTML = "Loading...";
 
-function loadData() {
-    fetch("/nifty-930-probability")
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("output").classList.remove("hidden");
+    try {
+        const res = await fetch("/nifty-930-probability");
+        const data = await res.json();
 
-            document.getElementById("title").innerText = data.title;
-            document.getElementById("ref").innerText = data.reference_level;
+        box.innerHTML = `
+            <h2>Intraday Probability Outlook — NIFTY 50 (9:30 AM)</h2>
+            <p><strong>Reference Level:</strong> ${data.reference_level}</p>
 
-            document.getElementById("upside").innerText = data.upside;
-            document.getElementById("downside").innerText = data.downside;
-            document.getElementById("flat").innerText = data.flat;
-            document.getElementById("vol").innerText = data.high_volatility;
+            <ul>
+                <li>Upside: ${data.upside}%</li>
+                <li>Downside: ${data.downside}%</li>
+                <li>Flat: ${data.flat}%</li>
+                <li>High Volatility: ${data.high_volatility}%</li>
+            </ul>
 
-            document.getElementById("summary").innerText = data.actionable_summary;
-            document.getElementById("time").innerText = data.generated_at;
-        })
-        .catch(err => {
-            alert("Failed to load data");
-            console.error(err);
-        });
-}
+            <h3>Actionable Summary</h3>
+            <pre>${data.actionable_summary}</pre>
+
+            <small>Generated: ${data.generated_at}</small>
+        `;
+    } catch (err) {
+        box.innerHTML = "Error loading data.";
+    }
+});
