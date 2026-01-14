@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from datetime import datetime
 import pytz
+import os
 
 app = FastAPI()
 
@@ -12,18 +15,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve frontend folder
+app.mount("/static", StaticFiles(directory="Frontend"), name="static")
+
 IST = pytz.timezone("Asia/Kolkata")
 
+
+# ✅ ROOT SHOULD SERVE UI (NOT JSON)
 @app.get("/")
+def serve_ui():
+    return FileResponse("Frontend/index.html")
+
+
+# Health check (move API status here)
+@app.get("/health")
 def health():
     return {"status": "API running"}
+
 
 @app.get("/nifty-930-probability")
 def nifty_probability():
 
     now = datetime.now(IST)
 
-    # ---- SAFE BASE DATA (replace later with live feed) ----
     reference_level = 25732.3
 
     upside = 40
@@ -31,7 +45,6 @@ def nifty_probability():
     flat = 20
     high_vol = 30
 
-    # ---- LOGIC FOR ACTIONABLE SUMMARY ----
     if downside > upside:
         action = (
             "Buy PUT options only (high-risk intraday).\n"
