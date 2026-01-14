@@ -2,18 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>Paisa Kamao</title>
-    <link rel="stylesheet" href="/static/style.css" />
+    <title>Paisa कमाओ</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<h1>💰 Paisa कमाओ</h1>
-<p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+<div class="container">
 
-<button id="loadBtn">📊 Load 9:30 Probability</button>
+    <h1>💰 Paisa कमाओ</h1>
+    <p class="subtitle">9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
 
-<div id="output" class="card" style="display:none;"></div>
+    <div class="warning">
+        This prompt should be executed only between 9:20 AM and 9:28 AM.<br>
+        यह प्रॉम्प्ट केवल सुबह 9:20 बजे से 9:28 बजे के बीच ही चलाया जाना चाहिए।
+    </div>
 
-<script src="/static/app.js"></script>
+    <!-- ONLY ONE BUTTON -->
+    <button id="loadBtn">📊 Load 9:30 Probability</button>
+
+    <!-- Probability Card -->
+    <div id="probabilityCard" class="card hidden">
+
+        <h2 id="title"></h2>
+        <p><strong>Reference Level:</strong> <span id="reference"></span></p>
+
+        <div class="grid">
+            <div class="up">Upside: <span id="upside"></span>%</div>
+            <div class="down">Downside: <span id="downside"></span>%</div>
+            <div class="flat">Flat: <span id="flat"></span>%</div>
+            <div class="vol">High Volatility: <span id="volatility"></span>%</div>
+        </div>
+
+        <div class="summary">
+            <h3>Actionable Summary</h3>
+            <p id="strategy"></p>
+            <p><strong>Strikes:</strong> <span id="strikes"></span></p>
+            <p><strong>Premium:</strong> <span id="premium"></span></p>
+            <p><strong>Success Probability:</strong> <span id="success"></span></p>
+        </div>
+
+        <p class="time">Generated at: <span id="time"></span></p>
+
+    </div>
+
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
