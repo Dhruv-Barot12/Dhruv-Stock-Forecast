@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from datetime import datetime
 import pytz
 import os
@@ -17,12 +17,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve frontend folder
-app.mount("/static", StaticFiles(directory="frontend"), name="static")
+# Check frontend availability safely
+FRONTEND_DIR = "frontend"
+INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
+
+if os.path.isdir(FRONTEND_DIR):
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 @app.get("/")
-def serve_frontend():
-    return FileResponse("frontend/index.html")
+def root():
+    if os.path.isfile(INDEX_FILE):
+        return FileResponse(INDEX_FILE)
+    return JSONResponse({"status": "API running"})
 
 @app.get("/health")
 def health():
@@ -34,17 +40,16 @@ def nifty_930_probability():
     now = datetime.now(ist)
 
     return {
-        "title": "Intraday Probability Outlook — NIFTY 50 (9:30 AM)",
         "reference_level": 25732.3,
         "upside": 40,
         "downside": 40,
         "flat": 20,
         "high_volatility": 30,
         "actionable_summary": (
-            "High-risk setup today.\n"
-            "Directional clarity is limited.\n"
-            "Trade only after early trend confirmation.\n"
-            "Avoid holding both call and put together."
+            "High-risk intraday setup.\n"
+            "Directional bias unclear pre-open.\n"
+            "Trade only after early confirmation.\n"
+            "Avoid holding both CE & PE together."
         ),
         "generated_at": now.strftime("%d %B %Y, %I:%M %p IST")
     }
