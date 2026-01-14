@@ -1,32 +1,20 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 import yfinance as yf
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
+import pytz
 
 app = FastAPI()
 
-# Allow frontend to call backend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+IST = pytz.timezone("Asia/Kolkata")
 
-# ---------- UTIL ----------
 def ist_now():
-    return datetime.now(timezone.utc).astimezone(
-        timezone(timedelta(hours=5, minutes=30))
-    )
+    return datetime.now(IST)
 
-# ---------- FRONTEND ----------
 @app.get("/")
-def home():
-    # IMPORTANT: index.html is inside Frontend folder
-    return FileResponse("Frontend/index.html")
+def root():
+    return {"status": "API running"}
 
-# ---------- 9:30 PROBABILITY API ----------
 @app.get("/probability-930")
 def probability_930():
     try:
@@ -43,13 +31,12 @@ def probability_930():
         prev_close = float(prev["Close"])
         gap_pct = (spot - prev_close) / prev_close * 100
 
-        # ---- Base probabilities (neutral day) ----
+        # ---- BASE PROBABILITIES ----
         upside = 40
         downside = 40
         flat = 20
         volatility = 30
 
-        # ---- Adjust probabilities using gap logic ----
         if gap_pct > 0.4:
             upside += 5
             flat -= 5
@@ -60,13 +47,33 @@ def probability_930():
         if abs(gap_pct) > 1:
             volatility = 45
 
+        # ---- ACTIONABLE LOGIC ----
+        if volatility >= 40:
+            action = (
+                "High volatility expected. Trade only with strict risk control. "
+                "ATM straddle possible for experienced traders."
+            )
+        elif upside >= downside + 5:
+            action = (
+                "Upside bias detected. Prefer buying near-ATM CALL options "
+                "with strict stop-loss."
+            )
+        elif downside >= upside + 5:
+            action = (
+                "Downside bias detected. Prefer buying near-ATM PUT options "
+                "with strict stop-loss."
+            )
+        else:
+            action = "No clear edge today. Avoid aggressive option buying."
+
         return {
             "title": "Intraday Probability Outlook — NIFTY 50 (9:30 AM)",
             "reference_level": spot,
-            "upside": f"{upside}%",
-            "downside": f"{downside}%",
-            "flat": f"{flat}%",
-            "volatility": f"{volatility}%",
+            "upside": upside,
+            "downside": downside,
+            "flat": flat,
+            "volatility": volatility,
+            "actionable_summary": action,
             "generated_at": ist_now().strftime("%d %B %Y, %I:%M %p IST")
         }
 
