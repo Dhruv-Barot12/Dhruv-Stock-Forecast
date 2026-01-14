@@ -8,7 +8,7 @@ document.getElementById("loadBtn").addEventListener("click", async () => {
         const data = await res.json();
 
         box.innerHTML = `
-            <h2>Intraday Probability Outlook — NIFTY 50 (9:30 AM)</h2>
+            <h2>Intraday Probability Outlook — NIFTY 50</h2>
             <p><strong>Reference Level:</strong> ${data.reference_level}</p>
 
             <ul>
@@ -24,6 +24,6 @@ document.getElementById("loadBtn").addEventListener("click", async () => {
             <small>Generated: ${data.generated_at}</small>
         `;
     } catch (err) {
-        box.innerHTML = "Error loading data.";
+        box.innerHTML = "❌ Failed to load data.";
     }
 });
