@@ -1,25 +1,111 @@
-<button onclick="load930()">9:30 Probability</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NIFTY 9:30 Probability</title>
 
-<div id="output"></div>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 30px;
+}
+.container {
+    max-width: 850px;
+    margin: auto;
+}
+button {
+    padding: 12px 20px;
+    font-size: 15px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    background: #1976d2;
+    color: white;
+}
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin-top: 25px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+h1 {
+    margin-top: 0;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+}
+.box {
+    padding: 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    background: #f1f3f6;
+}
+.up { color: #2e7d32; }
+.down { color: #c62828; }
+.flat { color: #1565c0; }
+.vol { color: #6a1b9a; }
+
+.action {
+    margin-top: 25px;
+    padding: 18px;
+    background: #fff3cd;
+    border-left: 5px solid #ff9800;
+    font-weight: bold;
+}
+
+.footer {
+    margin-top: 15px;
+    font-size: 13px;
+    color: #666;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <button onclick="loadData()">📊 Load 9:30 Probability</button>
+
+    <div class="card" id="output" style="display:none;">
+        <h1 id="title"></h1>
+        <p><strong>Reference Level:</strong> <span id="ref"></span></p>
+
+        <div class="grid">
+            <div class="box up">Upside: <span id="up"></span>%</div>
+            <div class="box down">Downside: <span id="down"></span>%</div>
+            <div class="box flat">Flat: <span id="flat"></span>%</div>
+            <div class="box vol">High Volatility: <span id="vol"></span>%</div>
+        </div>
+
+        <div class="action" id="action"></div>
+
+        <div class="footer" id="time"></div>
+    </div>
+</div>
 
 <script>
-async function load930() {
-  const res = await fetch("/probability-930");
-  const data = await res.json();
-
-  if (data.error) {
-    document.getElementById("output").innerText = data.error;
-    return;
-  }
-
-  document.getElementById("output").innerHTML = `
-    <h3>${data.title}</h3>
-    <p><b>Reference Level:</b> ${data.reference_level}</p>
-    <p>Upside: ${data.upside}</p>
-    <p>Downside: ${data.downside}</p>
-    <p>Roughly Flat: ${data.flat}</p>
-    <p>High Volatility: ${data.volatility}</p>
-    <small>Generated: ${data.generated_at}</small>
-  `;
+function loadData() {
+    fetch("/probability-930")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("output").style.display = "block";
+            document.getElementById("title").innerText = data.title;
+            document.getElementById("ref").innerText = data.reference_level;
+            document.getElementById("up").innerText = data.upside;
+            document.getElementById("down").innerText = data.downside;
+            document.getElementById("flat").innerText = data.flat;
+            document.getElementById("vol").innerText = data.volatility;
+            document.getElementById("action").innerText =
+                "Actionable Summary: " + data.actionable_summary;
+            document.getElementById("time").innerText =
+                "Generated at: " + data.generated_at;
+        });
 }
 </script>
+</body>
+</html>
