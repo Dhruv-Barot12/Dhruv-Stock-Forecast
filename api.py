@@ -1,100 +1,65 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-import yfinance as yf
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import pytz
-import os
 
 app = FastAPI()
 
-# ---------------- TIMEZONE ----------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 IST = pytz.timezone("Asia/Kolkata")
 
-def ist_now():
-    return datetime.now(IST)
-
-# ---------------- FRONTEND SERVING ----------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FRONTEND_DIR = os.path.join(BASE_DIR, "Frontend")
-
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
-
-@app.get("/", response_class=HTMLResponse)
-def serve_frontend():
-    index_path = os.path.join(FRONTEND_DIR, "index.html")
-    with open(index_path, "r", encoding="utf-8") as f:
-        return f.read()
-
-# ---------------- API STATUS ----------------
-@app.get("/api-status")
-def api_status():
+@app.get("/")
+def health():
     return {"status": "API running"}
 
-# ---------------- 9:30 PROBABILITY API ----------------
-@app.get("/probability-930")
-def probability_930():
-    try:
-        ticker = yf.Ticker("^NSEI")
-        data = ticker.history(period="6d", interval="1d")
+@app.get("/nifty-930-probability")
+def nifty_probability():
 
-        if data.empty or len(data) < 2:
-            return {"error": "Market data unavailable"}
+    now = datetime.now(IST)
 
-        today = data.iloc[-1]
-        prev = data.iloc[-2]
+    # ---- SAFE BASE DATA (replace later with live feed) ----
+    reference_level = 25732.3
 
-        spot = round(float(today["Close"]), 2)
-        prev_close = float(prev["Close"])
-        gap_pct = (spot - prev_close) / prev_close * 100
+    upside = 40
+    downside = 40
+    flat = 20
+    high_vol = 30
 
-        # Base probabilities
-        upside = 40
-        downside = 40
-        flat = 20
-        volatility = 30
+    # ---- LOGIC FOR ACTIONABLE SUMMARY ----
+    if downside > upside:
+        action = (
+            "Buy PUT options only (high-risk intraday).\n"
+            "Avoid CALL buying unless sharp reversal.\n"
+            "Do not buy both sides today."
+        )
+    elif upside > downside:
+        action = (
+            "Buy CALL options only (high-risk intraday).\n"
+            "Avoid PUT buying unless breakdown.\n"
+            "Do not buy both sides today."
+        )
+    else:
+        action = (
+            "Market balanced.\n"
+            "Only scalping trades advised.\n"
+            "Avoid positional option buying."
+        )
 
-        if gap_pct > 0.4:
-            upside += 5
-            flat -= 5
-        elif gap_pct < -0.4:
-            downside += 5
-            flat -= 5
-
-        if abs(gap_pct) > 1:
-            volatility = 45
-
-        # Actionable logic
-        if volatility >= 40:
-            action = (
-                "High volatility expected. High-risk traders may consider "
-                "ATM straddle or directional option buying with strict stop-loss."
-            )
-        elif upside >= downside + 5:
-            action = (
-                "Upside bias. Prefer buying near-ATM CALL options. "
-                "Momentum continuation expected."
-            )
-        elif downside >= upside + 5:
-            action = (
-                "Downside bias. Prefer buying near-ATM PUT options. "
-                "Trend favors selling pressure."
-            )
-        else:
-            action = (
-                "No clear edge. Avoid aggressive option buying today."
-            )
-
-        return {
-            "title": "Intraday Probability Outlook — NIFTY 50 (9:30 AM)",
-            "reference_level": spot,
+    return {
+        "title": "Intraday Probability Outlook — NIFTY 50 (9:30 AM)",
+        "reference_level": reference_level,
+        "probabilities": {
             "upside": upside,
             "downside": downside,
             "flat": flat,
-            "volatility": volatility,
-            "actionable_summary": action,
-            "generated_at": ist_now().strftime("%d %B %Y, %I:%M %p IST")
-        }
-
-    except Exception as e:
-        return {"error": str(e)}
+            "high_volatility": high_vol
+        },
+        "actionable_summary": action,
+        "generated_at": now.strftime("%d %B %Y, %I:%M %p IST")
+    }
