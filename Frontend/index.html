@@ -1,44 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Paisa कमाओ</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <script src="/static/app.js"></script>
+    <meta charset="UTF-8" />
+    <title>Paisa Kamao</title>
+    <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
 
-<div class="container">
-    <h1>💰 Paisa कमाओ</h1>
-    <p class="subtitle">9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
+<h1>💰 Paisa कमाओ</h1>
+<p>9:30 AM High-Risk Intraday Options Insight (Nifty 50)</p>
 
-    <div class="alert">
-        This prompt should be executed only between 9:20 AM and 9:28 AM.
-    </div>
+<button id="loadBtn">📊 Load 9:30 Probability</button>
 
-    <button id="loadBtn">📊 Load 9:30 Probability</button>
+<div id="output" class="card" style="display:none;"></div>
 
-    <div id="output" class="card hidden">
-        <h2 id="title"></h2>
-
-        <p><strong>Reference Level:</strong> <span id="ref"></span></p>
-
-        <div class="grid">
-            <div class="box green">Upside: <span id="upside"></span>%</div>
-            <div class="box red">Downside: <span id="downside"></span>%</div>
-            <div class="box blue">Flat: <span id="flat"></span>%</div>
-            <div class="box purple">High Volatility: <span id="vol"></span>%</div>
-        </div>
-
-        <div class="summary">
-            <strong>Actionable Summary</strong>
-            <p id="summary"></p>
-        </div>
-
-        <p class="time">Generated at: <span id="time"></span></p>
-    </div>
-</div>
-
-<script src="app.js"></script>
+<script src="/static/app.js"></script>
 </body>
 </html>
