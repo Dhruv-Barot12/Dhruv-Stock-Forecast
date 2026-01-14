@@ -1,29 +1,34 @@
 document.getElementById("loadBtn").addEventListener("click", async () => {
-    const box = document.getElementById("output");
-    box.style.display = "block";
-    box.innerHTML = "Loading...";
-
     try {
         const res = await fetch("/nifty-930-probability");
         const data = await res.json();
 
-        box.innerHTML = `
-            <h2>Intraday Probability Outlook — NIFTY 50</h2>
-            <p><strong>Reference Level:</strong> ${data.reference_level}</p>
+        document.getElementById("probabilityCard").classList.remove("hidden");
 
-            <ul>
-                <li>Upside: ${data.upside}%</li>
-                <li>Downside: ${data.downside}%</li>
-                <li>Flat: ${data.flat}%</li>
-                <li>High Volatility: ${data.high_volatility}%</li>
-            </ul>
+        document.getElementById("title").innerText = data.title;
+        document.getElementById("reference").innerText = data.reference_level;
 
-            <h3>Actionable Summary</h3>
-            <pre>${data.actionable_summary}</pre>
+        document.getElementById("upside").innerText = data.probabilities.upside;
+        document.getElementById("downside").innerText = data.probabilities.downside;
+        document.getElementById("flat").innerText = data.probabilities.flat;
+        document.getElementById("volatility").innerText = data.probabilities.high_volatility;
 
-            <small>Generated: ${data.generated_at}</small>
-        `;
+        document.getElementById("strategy").innerText =
+            data.actionable_summary.strategy + " — " + data.actionable_summary.reason;
+
+        document.getElementById("strikes").innerText =
+            data.actionable_summary.recommended_strikes.join(", ");
+
+        document.getElementById("premium").innerText =
+            data.actionable_summary.expected_premium_range;
+
+        document.getElementById("success").innerText =
+            data.actionable_summary.probability_of_success;
+
+        document.getElementById("time").innerText = data.generated_at;
+
     } catch (err) {
-        box.innerHTML = "❌ Failed to load data.";
+        alert("Failed to load probability data");
+        console.error(err);
     }
 });
