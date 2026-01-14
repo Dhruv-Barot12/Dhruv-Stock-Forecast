@@ -1,33 +1,15 @@
-async function loadTrade() {
-    const res = await fetch("/api/trade");
-    const d = await res.json();
+document.getElementById("loadBtn").addEventListener("click", async () => {
+    const res = await fetch("/nifty-930-probability");
+    const data = await res.json();
 
-    document.getElementById("output").innerHTML = `
-        <h3>📊 Trade Output</h3>
-        Spot: ${d.spot}<br>
-        ATM: ${d.atm}<br><br>
+    document.getElementById("output").style.display = "block";
 
-        Generated: ${d.generated}<br>
-        Weekly Expiry: ${d.weekly_expiry}<br>
-        Monthly Expiry: ${d.monthly_expiry}<br><br>
+    document.getElementById("ref").innerText = data.reference_level;
+    document.getElementById("up").innerText = data.probabilities.upside;
+    document.getElementById("down").innerText = data.probabilities.downside;
+    document.getElementById("flat").innerText = data.probabilities.flat;
+    document.getElementById("vol").innerText = data.probabilities.high_volatility;
 
-        Final Decision: ${d.decision}<br>
-        Premium: ₹${d.premium}<br>
-        Expected Return: ${d.expected_return}<br>
-        Risk: ${d.risk}<br><br>
-
-        <b>Actionable Summary:</b><br>
-        ${d.summary}
-    `;
-}
-
-async function loadSR() {
-    const res = await fetch("/api/support-resistance");
-    const d = await res.json();
-
-    document.getElementById("output").innerHTML = `
-        <h3>📌 Support & Resistance</h3>
-        Support: ${d.support.join(", ")}<br>
-        Resistance: ${d.resistance.join(", ")}
-    `;
-}
+    document.getElementById("summary").innerText = data.actionable_summary;
+    document.getElementById("time").innerText = data.generated_at;
+});
