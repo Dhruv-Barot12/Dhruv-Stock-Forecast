@@ -1,51 +1,44 @@
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
-import os
 
 app = FastAPI()
 
-# ---------- CORS ----------
+# CORS (important for frontend fetch)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---------- PATHS ----------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FRONTEND_DIR = os.path.join(BASE_DIR, "frontend")
-INDEX_FILE = os.path.join(FRONTEND_DIR, "index.html")
-
-# ---------- STATIC FILES ----------
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
-
-# ---------- ROOT ----------
 @app.get("/")
-def serve_index():
-    return FileResponse(INDEX_FILE)
-
-# ---------- API STATUS ----------
-@app.get("/status")
-def status():
+def health():
     return {"status": "API running"}
 
-# ---------- 9:30 PROBABILITY ----------
 @app.get("/nifty-930-probability")
 def nifty_930_probability():
+    now = datetime.now().strftime("%d %B %Y, %I:%M %p IST")
+
     return {
+        "title": "Intraday Probability Outlook — NIFTY 50 (9:30 AM)",
         "reference_level": 25732.3,
-        "upside": 40,
-        "downside": 40,
-        "flat": 20,
-        "high_volatility": 30,
-        "actionable_summary": (
-            "Market is evenly balanced.\n"
-            "High-risk traders may wait for first 15-min breakout.\n"
-            "Avoid buying both sides simultaneously."
-        ),
-        "generated_at": datetime.now().strftime("%d %B %Y, %I:%M %p IST")
+
+        "probabilities": {
+            "upside": 40,
+            "downside": 40,
+            "flat": 20,
+            "high_volatility": 30
+        },
+
+        "actionable_summary": {
+            "strategy": "Buy Puts only (high-risk directional downside play)",
+            "reason": "Equal upside/downside probability with elevated volatility skewed to downside",
+            "recommended_strikes": ["ATM PE", "1-step ITM PE"],
+            "expected_premium_range": "₹180 – ₹260",
+            "probability_of_success": "55–60%"
+        },
+
+        "generated_at": now
     }
