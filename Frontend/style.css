@@ -1,19 +1,15 @@
 body {
     font-family: Arial, sans-serif;
-    background: #f4f7fb;
-    padding: 20px;
+    background: #f6f7f9;
 }
 
-.alert {
-    background: #ffe08a;
-    padding: 10px;
-    margin: 15px 0;
-    border-radius: 6px;
+.container {
+    max-width: 900px;
+    margin: 40px auto;
 }
 
-.actions button {
-    padding: 10px 15px;
-    margin-right: 10px;
+.primary-btn {
+    padding: 12px 18px;
     background: #2563eb;
     color: white;
     border: none;
@@ -21,10 +17,31 @@ body {
     cursor: pointer;
 }
 
-#output {
+.trade-box {
+    margin-top: 25px;
     background: white;
-    padding: 15px;
-    margin-top: 20px;
-    border-radius: 8px;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
+.trade-box h2 {
+    margin-bottom: 15px;
+}
+
+.trade-box ul {
+    line-height: 1.8;
+}
+
+.summary {
+    margin-top: 15px;
+    background: #fff4cc;
+    padding: 12px;
+    border-left: 4px solid #f59e0b;
+}
+
+.time {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #555;
+}
