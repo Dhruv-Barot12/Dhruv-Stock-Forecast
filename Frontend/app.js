@@ -1,37 +1,42 @@
-// -------- IST MILITARY TIME --------
-function updateISTTime() {
-    const now = new Date();
-    const ist = new Date(
-        now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
-    );
-
-    const h = String(ist.getHours()).padStart(2, "0");
-    const m = String(ist.getMinutes()).padStart(2, "0");
-    const s = String(ist.getSeconds()).padStart(2, "0");
-
-    document.getElementById("militaryTime").innerText = `${h}:${m}:${s}`;
-}
-setInterval(updateISTTime, 1000);
-updateISTTime();
-
-// -------- BUTTON CLICK --------
-document.getElementById("tradeBtn").addEventListener("click", async () => {
+async function loadTrade() {
     try {
-        const res = await fetch("/nifty-930");
+        const res = await fetch("/trade");
         const data = await res.json();
 
-        document.getElementById("referenceLevel").innerText = data.reference_level;
-        document.getElementById("upside").innerText = data.upside + "%";
-        document.getElementById("downside").innerText = data.downside + "%";
-        document.getElementById("flat").innerText = data.flat + "%";
-        document.getElementById("volatility").innerText = data.high_volatility + "%";
-        document.getElementById("summaryText").innerText = data.summary;
-        document.getElementById("generatedAt").innerText = data.generated_at;
-
+        // Show card
         document.getElementById("resultCard").classList.remove("hidden");
 
+        // Safe fallback helper
+        const safe = (val, fallback = "—") =>
+            val !== undefined && val !== null && val !== "" ? val : fallback;
+
+        document.getElementById("refLevel").innerText =
+            safe(data.reference_level);
+
+        document.getElementById("upside").innerText =
+            safe(data.upside) + "%";
+
+        document.getElementById("downside").innerText =
+            safe(data.downside) + "%";
+
+        document.getElementById("flat").innerText =
+            safe(data.flat) + "%";
+
+        document.getElementById("volatility").innerText =
+            safe(data.high_volatility) + "%";
+
+        // 🔥 FIXED SUMMARY (NO UNDEFINED EVER)
+        document.getElementById("summary").innerText =
+            safe(
+                data.actionable_summary,
+                "No trade advised. Market conditions unclear."
+            );
+
+        document.getElementById("generatedAt").innerText =
+            safe(data.generated_at);
+
     } catch (err) {
-        alert("API Error. Check backend.");
+        alert("Failed to load trade data");
         console.error(err);
     }
-});
+}
