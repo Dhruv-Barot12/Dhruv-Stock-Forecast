@@ -10,41 +10,52 @@
 
 <div class="container">
 
-    <h1>💰 Paisa कमाओ</h1>
-    <p class="subtitle">
-        9:30 AM High-Risk Intraday Options Insight (NIFTY 50)
-    </p>
+    <!-- HERO -->
+    <div class="hero">
+        <h1>💰 Paisa <span>कमाओ</span></h1>
+        <p>9:30 AM High-Risk Intraday Options Insight (NIFTY 50)</p>
+    </div>
 
+    <!-- WARNING -->
     <div class="warning">
-        <strong>⚠️ Important</strong><br>
-        This prompt should be executed only between <b>9:20 AM – 9:28 AM</b><br>
-        यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए
+        <div class="warning-title">⚠️ Important</div>
+        <div class="warning-text">
+            This prompt should be executed only between <b>9:20 AM – 9:28 AM</b><br>
+            यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए
+        </div>
     </div>
 
-    <div class="actions">
-        <button id="tradeBtn">📊 9:30 Trade</button>
+    <!-- ACTION -->
+    <div class="action-center">
+        <button id="tradeBtn" class="trade-btn">
+            📊 Execute 9:30 Trade
+        </button>
     </div>
 
+    <!-- CARD -->
     <div class="card">
         <h2>NIFTY 50 – 9:30 AM Outlook</h2>
 
-        <p><b>Reference Level:</b> <span id="reference">—</span></p>
+        <p class="ref">
+            <strong>Reference Level:</strong>
+            <span id="reference">—</span>
+        </p>
 
-        <div class="grid">
-            <p class="up">Upside: <span id="upside">—%</span></p>
-            <p class="down">Downside: <span id="downside">—%</span></p>
-            <p class="flat">Flat: <span id="flat">—%</span></p>
-            <p class="vol">High Volatility: <span id="volatility">—%</span></p>
+        <div class="stats">
+            <div class="stat up">⬆ Upside<br><span id="upside">—%</span></div>
+            <div class="stat down">⬇ Downside<br><span id="downside">—%</span></div>
+            <div class="stat flat">➖ Flat<br><span id="flat">—%</span></div>
+            <div class="stat vol">⚡ Volatility<br><span id="volatility">—%</span></div>
         </div>
 
         <div class="summary">
-            <h3>Actionable Summary</h3>
+            <h3>📌 Actionable Summary</h3>
             <p id="summary">No trade advised. Market conditions unclear.</p>
         </div>
 
-        <p class="generated">
+        <div class="generated">
             Generated at: <span id="generated">—</span>
-        </p>
+        </div>
     </div>
 
 </div>
