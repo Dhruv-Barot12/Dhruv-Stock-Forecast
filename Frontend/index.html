@@ -3,58 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>Paisa कमाओ – NIFTY 9:30</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- ✅ FIXED PATH -->
     <link rel="stylesheet" href="/Frontend/style.css">
 </head>
 <body>
 
 <div class="container">
 
-    <header class="header">
-        <h1>💰 Paisa कमाओ</h1>
-        <p>9:30 AM High-Risk Intraday Options Insight (NIFTY 50)</p>
-    </header>
+    <h1>💰 Paisa कमाओ</h1>
+    <p class="subtitle">
+        9:30 AM High-Risk Intraday Options Insight (NIFTY 50)
+    </p>
 
-    <div class="warning-box">
-        <strong>⚠️ Important</strong>
-        <p>This prompt should be executed only between <b>9:20 AM – 9:28 AM</b></p>
-        <p>यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए</p>
+    <div class="warning">
+        <strong>⚠️ Important</strong><br>
+        This prompt should be executed only between <b>9:20 AM – 9:28 AM</b><br>
+        यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए
     </div>
 
-    <div class="action-row">
-        <button class="trade-btn" onclick="loadTrade()">📊 9:30 Trade</button>
+    <div class="actions">
+        <button id="tradeBtn">📊 9:30 Trade</button>
     </div>
 
-    <div id="resultCard" class="card">
-
+    <div class="card">
         <h2>NIFTY 50 – 9:30 AM Outlook</h2>
 
-        <p><b>Reference Level:</b> <span id="refLevel">—</span></p>
+        <p><b>Reference Level:</b> <span id="reference">—</span></p>
 
-        <div class="stats">
-            <p class="up">Upside: <span id="upside">—</span>%</p>
-            <p class="down">Downside: <span id="downside">—</span>%</p>
-            <p class="flat">Flat: <span id="flat">—</span>%</p>
-            <p class="vol">High Volatility: <span id="volatility">—</span>%</p>
+        <div class="grid">
+            <p class="up">Upside: <span id="upside">—%</span></p>
+            <p class="down">Downside: <span id="downside">—%</span></p>
+            <p class="flat">Flat: <span id="flat">—%</span></p>
+            <p class="vol">High Volatility: <span id="volatility">—%</span></p>
         </div>
 
-        <div class="summary-box">
-            <strong>Actionable Summary</strong>
-            <p id="summary">—</p>
+        <div class="summary">
+            <h3>Actionable Summary</h3>
+            <p id="summary">No trade advised. Market conditions unclear.</p>
         </div>
 
         <p class="generated">
-            Generated at: <span id="generatedAt">—</span>
+            Generated at: <span id="generated">—</span>
         </p>
-
     </div>
 
 </div>
 
-<!-- ✅ FIXED PATH -->
 <script src="/Frontend/app.js"></script>
-
 </body>
 </html>
