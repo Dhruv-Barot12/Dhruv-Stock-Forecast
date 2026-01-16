@@ -1,24 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>NIFTY 9:30 Probability</title>
-    <link rel="stylesheet" href="/static/style.css" />
+    <meta charset="UTF-8">
+    <title>Paisa कमाओ</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
 <div class="container">
-    <button onclick="loadProbability()">📊 Load 9:30 Probability</button>
+    <h1>💰 Paisa कमाओ</h1>
+    <h3>9:30 AM High-Risk Intraday Options Insight (NIFTY 50)</h3>
 
-    <div class="card" id="result" style="display:none;">
-        <h2>NIFTY 50 – 9:30 AM Outlook</h2>
+    <div class="warning">
+        <strong>⚠️ Important:</strong><br>
+        This prompt should be executed only between <b>9:20 AM – 9:28 AM</b><br>
+        यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए।
+    </div>
+
+    <button onclick="loadTrade()">📊 9:30 Trade</button>
+
+    <div id="result" class="card hidden">
+        <h2 id="title"></h2>
         <p><b>Reference Level:</b> <span id="ref"></span></p>
 
         <div class="grid">
-            <div class="up">Upside: <span id="up"></span>%</div>
-            <div class="down">Downside: <span id="down"></span>%</div>
-            <div class="flat">Flat: <span id="flat"></span>%</div>
-            <div class="vol">High Volatility: <span id="vol"></span>%</div>
+            <span class="up">Upside: <b id="up"></b>%</span>
+            <span class="down">Downside: <b id="down"></b>%</span>
+            <span class="flat">Flat: <b id="flat"></b>%</span>
+            <span class="vol">High Volatility: <b id="vol"></b>%</span>
         </div>
 
         <div class="summary">
