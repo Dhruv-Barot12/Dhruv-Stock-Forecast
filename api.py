@@ -1,28 +1,31 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
-import os
+import pytz
 
 app = FastAPI()
 
-# Serve frontend folder
+# Serve Frontend folder
 app.mount("/static", StaticFiles(directory="Frontend"), name="static")
 
-@app.get("/", response_class=HTMLResponse)
-def serve_frontend():
-    with open("Frontend/index.html", "r", encoding="utf-8") as f:
-        return f.read()
+# Serve index.html at root URL
+@app.get("/")
+def serve_ui():
+    return FileResponse("Frontend/index.html")
 
-@app.get("/api/nifty-930")
+# 9:30 Trade API
+@app.get("/nifty-930")
 def nifty_930():
+    ist = pytz.timezone("Asia/Kolkata")
+    now = datetime.now(ist)
+
     return {
-        "index": "NIFTY 50",
-        "reference": 25732.3,
+        "reference_level": 25732.3,
         "upside": 40,
         "downside": 40,
         "flat": 20,
-        "volatility": 30,
-        "summary": "Buy Puts only. Avoid calls unless strong breakout.",
-        "generated": datetime.now().strftime("%d %B %Y, %I:%M %p IST")
+        "high_volatility": 30,
+        "actionable_summary": "Buy Puts only. Avoid calls unless strong breakout.",
+        "generated_at": now.strftime("%d %B %Y, %H:%M IST")
     }
