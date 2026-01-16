@@ -2,43 +2,51 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Paisa कमाओ</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Paisa कमाओ – NIFTY 9:30 Trade</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
+
     <h1>💰 Paisa कमाओ</h1>
     <h3>9:30 AM High-Risk Intraday Options Insight (NIFTY 50)</h3>
 
-    <div class="warning">
-        <strong>⚠️ Important:</strong><br>
+    <div class="warning-box">
+        <b>⚠ Important:</b><br>
         This prompt should be executed only between <b>9:20 AM – 9:28 AM</b><br>
         यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए।
     </div>
 
-    <button onclick="loadTrade()">📊 9:30 Trade</button>
+    <div class="time-box">
+        🕒 <b>IST (Military Time):</b> <span id="ist-time">--:--</span>
+    </div>
 
-    <div id="result" class="card hidden">
-        <h2 id="title"></h2>
-        <p><b>Reference Level:</b> <span id="ref"></span></p>
+    <button id="tradeBtn">📊 9:30 Trade</button>
+
+    <div id="resultCard" class="card hidden">
+
+        <h2>NIFTY 50 – 9:30 AM Outlook</h2>
+
+        <p><b>Reference Level:</b> <span id="refLevel"></span></p>
 
         <div class="grid">
-            <span class="up">Upside: <b id="up"></b>%</span>
-            <span class="down">Downside: <b id="down"></b>%</span>
+            <span class="up">Upside: <b id="upside"></b>%</span>
+            <span class="down">Downside: <b id="downside"></b>%</span>
             <span class="flat">Flat: <b id="flat"></b>%</span>
-            <span class="vol">High Volatility: <b id="vol"></b>%</span>
+            <span class="vol">High Volatility: <b id="volatility"></b>%</span>
         </div>
 
         <div class="summary">
             <b>Actionable Summary:</b>
-            <p id="summary"></p>
+            <p id="summaryText"></p>
         </div>
 
-        <small id="time"></small>
+        <p class="time">Generated at: <span id="generatedAt"></span></p>
     </div>
+
 </div>
 
-<script src="/static/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
