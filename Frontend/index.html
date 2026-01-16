@@ -1,52 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Paisa कमाओ – NIFTY 9:30 Trade</title>
-    <link rel="stylesheet" href="style.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/style.css" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 <body>
 
-<div class="container">
+    <div class="container">
 
-    <h1>💰 Paisa कमाओ</h1>
-    <h3>9:30 AM High-Risk Intraday Options Insight (NIFTY 50)</h3>
+        <!-- Header -->
+        <h1 class="title">💰 Paisa कमाओ</h1>
+        <p class="subtitle">
+            9:30 AM High-Risk Intraday Options Insight (NIFTY 50)
+        </p>
 
-    <div class="warning-box">
-        <b>⚠ Important:</b><br>
-        This prompt should be executed only between <b>9:20 AM – 9:28 AM</b><br>
-        यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए।
-    </div>
-
-    <div class="time-box">
-        🕒 <b>IST (Military Time):</b> <span id="ist-time">--:--</span>
-    </div>
-
-    <button id="tradeBtn">📊 9:30 Trade</button>
-
-    <div id="resultCard" class="card hidden">
-
-        <h2>NIFTY 50 – 9:30 AM Outlook</h2>
-
-        <p><b>Reference Level:</b> <span id="refLevel"></span></p>
-
-        <div class="grid">
-            <span class="up">Upside: <b id="upside"></b>%</span>
-            <span class="down">Downside: <b id="downside"></b>%</span>
-            <span class="flat">Flat: <b id="flat"></b>%</span>
-            <span class="vol">High Volatility: <b id="volatility"></b>%</span>
+        <!-- Warning Box -->
+        <div class="warning-box">
+            <strong>⚠️ Important:</strong><br>
+            This prompt should be executed only between <b>9:20 AM – 9:28 AM</b><br>
+            यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए
         </div>
 
-        <div class="summary">
-            <b>Actionable Summary:</b>
-            <p id="summaryText"></p>
+        <!-- Military Time -->
+        <div class="time-box">
+            <strong>IST (Military Time):</strong>
+            <span id="militaryTime">--:--</span>
         </div>
 
-        <p class="time">Generated at: <span id="generatedAt"></span></p>
+        <!-- Action Button -->
+        <button id="tradeBtn" class="trade-btn">
+            📊 9:30 Trade
+        </button>
+
+        <!-- Result Card -->
+        <div id="resultCard" class="card hidden">
+
+            <h2>NIFTY 50 – 9:30 AM Outlook</h2>
+
+            <p><strong>Reference Level:</strong>
+                <span id="referenceLevel">--</span>
+            </p>
+
+            <div class="prob-grid">
+                <span class="up">Upside: <b id="upside">--%</b></span>
+                <span class="down">Downside: <b id="downside">--%</b></span>
+                <span class="flat">Flat: <b id="flat">--%</b></span>
+                <span class="vol">High Volatility: <b id="volatility">--%</b></span>
+            </div>
+
+            <div class="summary-box">
+                <strong>Actionable Summary:</strong>
+                <p id="summaryText">--</p>
+            </div>
+
+            <p class="generated">
+                Generated at: <span id="generatedAt">--</span>
+            </p>
+
+        </div>
+
     </div>
 
-</div>
-
-<script src="app.js"></script>
+    <!-- JS -->
+    <script src="/static/app.js"></script>
 </body>
 </html>
