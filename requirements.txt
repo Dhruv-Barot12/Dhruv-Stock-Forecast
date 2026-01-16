@@ -1,4 +1,2 @@
 fastapi
 uvicorn
-yfinance
-pytz
