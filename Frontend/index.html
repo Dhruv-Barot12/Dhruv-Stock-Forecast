@@ -1,72 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Paisa कमाओ – NIFTY 9:30 Trade</title>
+    <meta charset="UTF-8">
+    <title>Paisa कमाओ – NIFTY 9:30</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="/static/style.css" />
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <!-- Header -->
-        <h1 class="title">💰 Paisa कमाओ</h1>
-        <p class="subtitle">
-            9:30 AM High-Risk Intraday Options Insight (NIFTY 50)
-        </p>
+    <h1 class="title">💰 Paisa कमाओ</h1>
+    <p class="subtitle">
+        9:30 AM High-Risk Intraday Options Insight (NIFTY 50)
+    </p>
 
-        <!-- Warning Box -->
-        <div class="warning-box">
-            <strong>⚠️ Important:</strong><br>
-            This prompt should be executed only between <b>9:20 AM – 9:28 AM</b><br>
-            यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए
+    <!-- Warning -->
+    <div class="warning-box">
+        <strong>⚠️ Important</strong><br>
+        This prompt should be executed only between <b>9:20 AM – 9:28 AM</b><br>
+        यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए
+    </div>
+
+    <!-- Time + Button Row -->
+    <div class="action-row">
+        <div class="time-pill">
+            🇮🇳 IST (Military Time): <span id="militaryTime">00:00:00</span>
         </div>
 
-        <!-- Military Time -->
-        <div class="time-box">
-            <strong>IST (Military Time):</strong>
-            <span id="militaryTime">--:--</span>
-        </div>
-
-        <!-- Action Button -->
         <button id="tradeBtn" class="trade-btn">
             📊 9:30 Trade
         </button>
+    </div>
 
-        <!-- Result Card -->
-        <div id="resultCard" class="card hidden">
+    <!-- Result -->
+    <div id="resultCard" class="card hidden">
 
-            <h2>NIFTY 50 – 9:30 AM Outlook</h2>
+        <h2>NIFTY 50 – 9:30 AM Outlook</h2>
 
-            <p><strong>Reference Level:</strong>
-                <span id="referenceLevel">--</span>
-            </p>
+        <p><strong>Reference Level:</strong>
+            <span id="referenceLevel">—</span>
+        </p>
 
-            <div class="prob-grid">
-                <span class="up">Upside: <b id="upside">--%</b></span>
-                <span class="down">Downside: <b id="downside">--%</b></span>
-                <span class="flat">Flat: <b id="flat">--%</b></span>
-                <span class="vol">High Volatility: <b id="volatility">--%</b></span>
-            </div>
-
-            <div class="summary-box">
-                <strong>Actionable Summary:</strong>
-                <p id="summaryText">--</p>
-            </div>
-
-            <p class="generated">
-                Generated at: <span id="generatedAt">--</span>
-            </p>
-
+        <div class="prob-grid">
+            <span class="up">Upside: <b id="upside">—%</b></span>
+            <span class="down">Downside: <b id="downside">—%</b></span>
+            <span class="flat">Flat: <b id="flat">—%</b></span>
+            <span class="vol">High Volatility: <b id="volatility">—%</b></span>
         </div>
+
+        <div class="summary-box">
+            <strong>Actionable Summary</strong>
+            <p id="summaryText">—</p>
+        </div>
+
+        <p class="generated">
+            Generated at: <span id="generatedAt">—</span>
+        </p>
 
     </div>
 
-    <!-- JS -->
-    <script src="/static/app.js"></script>
+</div>
+
+<script src="/static/app.js"></script>
 </body>
 </html>
