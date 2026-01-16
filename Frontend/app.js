@@ -1,16 +1,32 @@
-function loadTrade() {
-    fetch("/api/nifty-930")
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById("result").classList.remove("hidden");
-            document.getElementById("title").innerText = data.index + " – 9:30 AM Outlook";
-            document.getElementById("ref").innerText = data.reference;
-            document.getElementById("up").innerText = data.upside;
-            document.getElementById("down").innerText = data.downside;
-            document.getElementById("flat").innerText = data.flat;
-            document.getElementById("vol").innerText = data.volatility;
-            document.getElementById("summary").innerText = data.summary;
-            document.getElementById("time").innerText = "Generated: " + data.generated;
-        })
-        .catch(() => alert("API Error"));
+// IST Military Time
+function updateISTTime() {
+    const now = new Date();
+    const ist = new Date(
+        now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    );
+    const h = String(ist.getHours()).padStart(2, "0");
+    const m = String(ist.getMinutes()).padStart(2, "0");
+    document.getElementById("ist-time").innerText = `${h}:${m}`;
 }
+setInterval(updateISTTime, 1000);
+updateISTTime();
+
+// Fetch 9:30 Trade
+document.getElementById("tradeBtn").addEventListener("click", async () => {
+    try {
+        const res = await fetch("/nifty-930");
+        const data = await res.json();
+
+        document.getElementById("refLevel").innerText = data.reference_level;
+        document.getElementById("upside").innerText = data.upside;
+        document.getElementById("downside").innerText = data.downside;
+        document.getElementById("flat").innerText = data.flat;
+        document.getElementById("volatility").innerText = data.high_volatility;
+        document.getElementById("summaryText").innerText = data.actionable_summary;
+        document.getElementById("generatedAt").innerText = data.generated_at;
+
+        document.getElementById("resultCard").classList.remove("hidden");
+    } catch (e) {
+        alert("API not responding. Please check backend.");
+    }
+});
