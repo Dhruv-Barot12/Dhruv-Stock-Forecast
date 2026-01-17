@@ -1,18 +1,16 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 import pytz
 import os
 import pyotp
 
-# ✅ CORRECT IMPORT (case-sensitive)
+# SmartAPI (Angel One)
 from smartapi import SmartConnect
 
 app = FastAPI()
 
-# ---------- CORS ----------
+# -------------------- CORS --------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,14 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------- Serve Frontend ----------
-app.mount("/Frontend", StaticFiles(directory="Frontend"), name="frontend")
-
-@app.get("/")
-def home():
-    return FileResponse("Frontend/index.html")
-
-# ---------- Helpers ----------
+# -------------------- TIME --------------------
 IST = pytz.timezone("Asia/Kolkata")
 
 def ist_now():
@@ -37,13 +28,14 @@ def ist_now():
 def fmt_time(dt):
     return dt.strftime("%d %B %Y, %H:%M IST")
 
+# -------------------- ENV --------------------
 def env(name):
     value = os.getenv(name)
     if not value:
-        raise HTTPException(status_code=500, detail=f"Missing ENV variable: {name}")
+        raise HTTPException(status_code=500, detail=f"Missing ENV: {name}")
     return value
 
-# ---------- SmartAPI Login ----------
+# -------------------- SMART API LOGIN --------------------
 def smartapi_login():
     try:
         api_key = env("SMART_API_KEY")
@@ -51,84 +43,84 @@ def smartapi_login():
         password = env("SMART_PASSWORD")
         totp_secret = env("SMART_TOTP")
 
-        obj = SmartConnect(api_key=api_key)
+        smart = SmartConnect(api_key=api_key)
         otp = pyotp.TOTP(totp_secret).now()
 
-        session = obj.generateSession(client_id, password, otp)
-
+        session = smart.generateSession(client_id, password, otp)
         if not session or not session.get("status"):
             raise Exception("SmartAPI session failed")
 
-        return obj
+        return smart
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"SmartAPI login error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-# ---------- Business Logic ----------
-def compute_probabilities(vix, bias):
-    if bias == "bearish":
-        return 25, 45, 15, 35
-    if bias == "bullish":
-        return 45, 25, 15, 35
-    return 30, 30, 25, 30
+# -------------------- LOGIC --------------------
+def probabilities(vix):
+    if vix >= 16:
+        return 25, 45, 15, 35  # bearish
+    elif vix <= 13:
+        return 45, 25, 15, 30  # bullish
+    else:
+        return 30, 30, 25, 30  # neutral
 
-def build_summary(bias, vix):
-    if bias == "bearish":
+def actionable_summary(vix):
+    if vix >= 16:
         return (
             "Actionable Summary:\n"
-            "Market shows bearish bias after opening range.\n\n"
+            "Market shows bearish bias with elevated volatility.\n\n"
             "Trade Plan:\n"
             "• Buy near ATM PUT options only\n"
             "• Avoid CALL buying unless strong reversal\n\n"
             "Risk:\n"
-            f"• Volatility elevated (VIX ~ {vix:.2f})\n"
-            "• Use strict stop-loss"
+            "• Sudden short-covering rallies possible\n"
+            "• Strict stop-loss mandatory"
         )
-    if bias == "bullish":
+    elif vix <= 13:
         return (
             "Actionable Summary:\n"
-            "Market shows bullish momentum.\n\n"
+            "Market shows bullish momentum with controlled volatility.\n\n"
             "Trade Plan:\n"
             "• Buy near ATM CALL options only\n"
             "• Avoid PUT buying unless breakdown\n\n"
             "Risk:\n"
-            f"• Volatility elevated (VIX ~ {vix:.2f})"
+            "• Watch for fake breakouts"
         )
-    return (
-        "Actionable Summary:\n"
-        "Market conditions unclear.\n\n"
-        "Trade Plan:\n"
-        "• Avoid aggressive trades\n"
-    )
+    else:
+        return (
+            "Actionable Summary:\n"
+            "Market conditions are unclear.\n\n"
+            "Trade Plan:\n"
+            "• Avoid aggressive directional trades"
+        )
 
-# ---------- API ----------
+# -------------------- ROUTES --------------------
+@app.get("/")
+def health():
+    return {"status": "API running"}
+
 @app.get("/nifty-930")
-def execute_930_trade():
+def nifty_930():
     try:
         smart = smartapi_login()
 
         nifty = smart.ltpData("NSE", "NIFTY", "26000")
+        vix = smart.ltpData("NSE", "INDIAVIX", "26009")
+
         ltp = float(nifty["data"]["ltp"])
+        vix_val = float(vix["data"]["ltp"])
 
-        vix_data = smart.ltpData("NSE", "INDIAVIX", "26009")
-        vix = float(vix_data["data"]["ltp"])
+        up, down, flat, vol = probabilities(vix_val)
 
-        bias = "bearish" if vix >= 16 else "neutral"
-
-        up, down, flat, vol = compute_probabilities(vix, bias)
-        summary = build_summary(bias, vix)
-
-        return JSONResponse({
+        return {
             "reference": round(ltp, 2),
             "upside": up,
             "downside": down,
             "flat": flat,
             "volatility": vol,
-            "summary": summary,
+            "summary": actionable_summary(vix_val),
             "generated_at": fmt_time(ist_now())
-        })
+        }
 
-    except HTTPException:
-        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
