@@ -5,96 +5,97 @@ import pytz
 import os
 import pyotp
 
-# SmartAPI (Angel One)
-from smartapi import SmartConnect
-
 app = FastAPI()
 
-# -------------------- CORS --------------------
+# ---------------- CORS ----------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# -------------------- TIME --------------------
+# ---------------- TIME ----------------
 IST = pytz.timezone("Asia/Kolkata")
 
 def ist_now():
     return datetime.now(IST)
 
-def fmt_time(dt):
+def fmt(dt):
     return dt.strftime("%d %B %Y, %H:%M IST")
 
-# -------------------- ENV --------------------
-def env(name):
-    value = os.getenv(name)
-    if not value:
-        raise HTTPException(status_code=500, detail=f"Missing ENV: {name}")
-    return value
+# ---------------- ENV ----------------
+def env(key):
+    val = os.getenv(key)
+    if not val:
+        raise HTTPException(status_code=500, detail=f"Missing ENV: {key}")
+    return val
 
-# -------------------- SMART API LOGIN --------------------
-def smartapi_login():
+# ---------------- SMART API (SAFE LOAD) ----------------
+def get_smart_connection():
     try:
+        # Import INSIDE function (critical)
+        from SmartApi import SmartConnect  
+
         api_key = env("SMART_API_KEY")
-        client_id = env("SMART_CLIENT_ID")
+        client = env("SMART_CLIENT_ID")
         password = env("SMART_PASSWORD")
         totp_secret = env("SMART_TOTP")
 
         smart = SmartConnect(api_key=api_key)
         otp = pyotp.TOTP(totp_secret).now()
 
-        session = smart.generateSession(client_id, password, otp)
-        if not session or not session.get("status"):
+        session = smart.generateSession(client, password, otp)
+        if not session.get("status"):
             raise Exception("SmartAPI session failed")
 
         return smart
 
+    except ImportError:
+        raise HTTPException(
+            status_code=500,
+            detail="SmartAPI library not installed correctly"
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# -------------------- LOGIC --------------------
+# ---------------- CORE LOGIC ----------------
 def probabilities(vix):
     if vix >= 16:
-        return 25, 45, 15, 35  # bearish
+        return 25, 45, 15, 35
     elif vix <= 13:
-        return 45, 25, 15, 30  # bullish
+        return 45, 25, 15, 30
     else:
-        return 30, 30, 25, 30  # neutral
+        return 30, 30, 25, 30
 
-def actionable_summary(vix):
+def summary(vix):
     if vix >= 16:
         return (
             "Actionable Summary:\n"
-            "Market shows bearish bias with elevated volatility.\n\n"
+            "Bearish bias with elevated volatility.\n\n"
             "Trade Plan:\n"
-            "• Buy near ATM PUT options only\n"
-            "• Avoid CALL buying unless strong reversal\n\n"
+            "• Buy near ATM PUT only\n"
+            "• Avoid CALL buying\n\n"
             "Risk:\n"
-            "• Sudden short-covering rallies possible\n"
-            "• Strict stop-loss mandatory"
+            "• Short covering possible\n"
+            "• Use strict stop-loss"
         )
     elif vix <= 13:
         return (
             "Actionable Summary:\n"
-            "Market shows bullish momentum with controlled volatility.\n\n"
+            "Bullish bias with controlled volatility.\n\n"
             "Trade Plan:\n"
-            "• Buy near ATM CALL options only\n"
-            "• Avoid PUT buying unless breakdown\n\n"
-            "Risk:\n"
-            "• Watch for fake breakouts"
+            "• Buy near ATM CALL only\n"
+            "• Avoid PUT buying"
         )
     else:
         return (
             "Actionable Summary:\n"
-            "Market conditions are unclear.\n\n"
-            "Trade Plan:\n"
-            "• Avoid aggressive directional trades"
+            "No clear edge.\n"
+            "Avoid aggressive trades."
         )
 
-# -------------------- ROUTES --------------------
+# ---------------- ROUTES ----------------
 @app.get("/")
 def health():
     return {"status": "API running"}
@@ -102,7 +103,7 @@ def health():
 @app.get("/nifty-930")
 def nifty_930():
     try:
-        smart = smartapi_login()
+        smart = get_smart_connection()
 
         nifty = smart.ltpData("NSE", "NIFTY", "26000")
         vix = smart.ltpData("NSE", "INDIAVIX", "26009")
@@ -118,8 +119,8 @@ def nifty_930():
             "downside": down,
             "flat": flat,
             "volatility": vol,
-            "summary": actionable_summary(vix_val),
-            "generated_at": fmt_time(ist_now())
+            "summary": summary(vix_val),
+            "generated_at": fmt(ist_now())
         }
 
     except Exception as e:
