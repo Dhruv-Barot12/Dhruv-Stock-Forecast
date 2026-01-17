@@ -1,20 +1,20 @@
-document.getElementById("tradeBtn").addEventListener("click", loadTrade);
+const btn = document.getElementById("tradeBtn");
 
-async function loadTrade() {
-    try {
-        const res = await fetch("/nifty-930");
-        const data = await res.json();
+btn.onclick = async () => {
+  btn.innerText = "⏳ Loading...";
+  btn.disabled = true;
 
-        document.getElementById("reference").innerText = data.reference;
-        document.getElementById("upside").innerText = data.upside + "%";
-        document.getElementById("downside").innerText = data.downside + "%";
-        document.getElementById("flat").innerText = data.flat + "%";
-        document.getElementById("volatility").innerText = data.volatility + "%";
-        document.getElementById("summary").innerText = data.summary;
-        document.getElementById("generated").innerText = data.generated_at;
+  const res = await fetch("/nifty-930");
+  const data = await res.json();
 
-    } catch (err) {
-        alert("Failed to load 9:30 data. Check API.");
-        console.error(err);
-    }
-}
+  document.getElementById("ref").innerText = data.reference ?? "—";
+  document.getElementById("up").innerText = data.upside ? data.upside + "%" : "—";
+  document.getElementById("down").innerText = data.downside ? data.downside + "%" : "—";
+  document.getElementById("flat").innerText = data.flat ? data.flat + "%" : "—";
+  document.getElementById("vol").innerText = data.volatility ? data.volatility + "%" : "—";
+  document.getElementById("summary").innerText = data.summary || "—";
+  document.getElementById("time").innerText = data.generated_at || "—";
+
+  btn.innerText = "📊 Execute 9:30 Trade";
+  btn.disabled = false;
+};
