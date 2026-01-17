@@ -6,7 +6,8 @@ from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from smartapi import SmartConnect
+# ✅ CORRECT IMPORT (CASE-SENSITIVE)
+from SmartApi import SmartConnect
 
 
 app = FastAPI()
@@ -19,7 +20,7 @@ app.add_middleware(
 )
 
 
-# ---------- UTILITIES ----------
+# ---------- HELPERS ----------
 
 def ist_now():
     return datetime.now(pytz.timezone("Asia/Kolkata"))
@@ -44,38 +45,37 @@ def actionable_summary(vix):
             "High volatility expected at open.\n"
             "• Prefer ATM Put buying on breakdown.\n"
             "• Avoid Call buying unless strong opening range breakout.\n"
-            "• Expect fast premium expansion — strict stop-loss mandatory.\n"
-            "• Suitable only for experienced intraday traders."
+            "• Fast premium expansion likely — strict stop-loss mandatory.\n"
+            "• Only for experienced traders."
         )
     elif vix >= 14:
         return (
-            "Moderate volatility expected.\n"
+            "Moderate volatility environment.\n"
             "• Directional trades possible after confirmation.\n"
-            "• ATM options preferred over OTM.\n"
-            "• Avoid overtrading — wait for clean structure."
+            "• Prefer ATM options.\n"
+            "• Avoid overtrading."
         )
     else:
         return (
-            "Low volatility environment.\n"
+            "Low volatility expected.\n"
             "• Directional option buying not advised.\n"
             "• Premium decay likely.\n"
-            "• Better to avoid 9:30 trade today."
+            "• Avoid 9:30 trade today."
         )
 
 
-# ---------- SMART API ----------
+# ---------- SMART API LOGIN ----------
 
 def get_smart():
-    api_key = os.getenv("SMART_API_KEY")
-    client_id = os.getenv("SMART_CLIENT_ID")
-    password = os.getenv("SMART_PASSWORD")
-    totp_secret = os.getenv("SMART_TOTP")
+    smart = SmartConnect(api_key=os.getenv("SMART_API_KEY"))
 
-    smart = SmartConnect(api_key=api_key)
+    otp = pyotp.TOTP(os.getenv("SMART_TOTP")).now()
 
-    otp = pyotp.TOTP(totp_secret).now()
-
-    data = smart.generateSession(client_id, password, otp)
+    data = smart.generateSession(
+        os.getenv("SMART_CLIENT_ID"),
+        os.getenv("SMART_PASSWORD"),
+        otp
+    )
 
     if not data.get("status"):
         raise Exception("SmartAPI login failed")
@@ -99,7 +99,7 @@ def nifty_930():
         vix = smart.ltpData("NSE", "INDIAVIX", "26009")
 
         if not nifty.get("data") or not vix.get("data"):
-            raise Exception("Live market data unavailable")
+            raise Exception("Market data unavailable")
 
         ltp = float(nifty["data"]["ltp"])
         vix_val = float(vix["data"]["ltp"])
@@ -124,10 +124,9 @@ def nifty_930():
             "flat": None,
             "volatility": None,
             "summary": (
-                "Live data could not be fetched.\n"
-                "• SmartAPI credentials may be invalid\n"
-                "• Market may be closed\n"
-                "• Please retry after some time"
+                "Live data unavailable.\n"
+                "• SmartAPI login failed or market closed.\n"
+                "• Please retry later."
             ),
             "generated_at": fmt(ist_now()),
             "error": str(e)
