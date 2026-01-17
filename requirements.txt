@@ -1,5 +1,5 @@
 fastapi
 uvicorn
 pytz
-smartapi-python
 pyotp
+smartapi-python
