@@ -1,65 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Paisa कमाओ – NIFTY 9:30</title>
-
-    <link rel="stylesheet" href="/Frontend/style.css">
+  <meta charset="UTF-8" />
+  <title>Paisa कमाओ – NIFTY 9:30</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <div class="container">
 
-    <!-- HERO -->
-    <div class="hero">
-        <h1>💰 Paisa <span>कमाओ</span></h1>
-        <p>9:30 AM High-Risk Intraday Options Insight (NIFTY 50)</p>
+  <h1>💰 Paisa <span>कमाओ</span></h1>
+  <p class="subtitle">9:30 AM High-Risk Intraday Options Insight (NIFTY 50)</p>
+
+  <div class="warning">
+    ⚠️ <b>Important</b><br>
+    Execute only between <b>9:20 AM – 9:28 AM</b><br>
+    यह प्रॉम्प्ट केवल सुबह 9:20 – 9:28 के बीच ही चलाना चाहिए
+  </div>
+
+  <button id="tradeBtn">📊 Execute 9:30 Trade</button>
+
+  <div class="card">
+    <h2>NIFTY 50 – 9:30 AM Outlook</h2>
+
+    <p><b>Reference Level:</b> <span id="ref">—</span></p>
+
+    <div class="stats">
+      <div class="up">↑ Upside<br><span id="up">—</span></div>
+      <div class="down">↓ Downside<br><span id="down">—</span></div>
+      <div class="flat">— Flat<br><span id="flat">—</span></div>
+      <div class="vol">⚡ Volatility<br><span id="vol">—</span></div>
     </div>
 
-    <!-- WARNING -->
-    <div class="warning">
-        <div class="warning-title">⚠️ Important</div>
-        <div class="warning-text">
-            This prompt should be executed only between <b>9:20 AM – 9:28 AM</b><br>
-            यह प्रॉम्प्ट केवल सुबह <b>9:20 – 9:28</b> के बीच ही चलाना चाहिए
-        </div>
+    <div class="summary">
+      <h3>📌 Actionable Summary</h3>
+      <pre id="summary">—</pre>
     </div>
 
-    <!-- ACTION -->
-    <div class="action-center">
-        <button id="tradeBtn" class="trade-btn">
-            📊 Execute 9:30 Trade
-        </button>
-    </div>
-
-    <!-- CARD -->
-    <div class="card">
-        <h2>NIFTY 50 – 9:30 AM Outlook</h2>
-
-        <p class="ref">
-            <strong>Reference Level:</strong>
-            <span id="reference">—</span>
-        </p>
-
-        <div class="stats">
-            <div class="stat up">⬆ Upside<br><span id="upside">—%</span></div>
-            <div class="stat down">⬇ Downside<br><span id="downside">—%</span></div>
-            <div class="stat flat">➖ Flat<br><span id="flat">—%</span></div>
-            <div class="stat vol">⚡ Volatility<br><span id="volatility">—%</span></div>
-        </div>
-
-        <div class="summary">
-            <h3>📌 Actionable Summary</h3>
-            <p id="summary">No trade advised. Market conditions unclear.</p>
-        </div>
-
-        <div class="generated">
-            Generated at: <span id="generated">—</span>
-        </div>
-    </div>
+    <p class="time">Generated at: <span id="time">—</span></p>
+  </div>
 
 </div>
 
-<script src="/Frontend/app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
