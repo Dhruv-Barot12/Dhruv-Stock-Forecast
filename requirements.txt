@@ -4,3 +4,4 @@ smartapi-python==1.4.8
 pyotp
 pytz
 requests
+logzero
