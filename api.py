@@ -1,13 +1,16 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
-import pytz
 import os
+import pytz
 import pyotp
+from datetime import datetime
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from smartapi import SmartConnect
+
 
 app = FastAPI()
 
-# ---------------- CORS ----------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,98 +18,88 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------------- TIME ----------------
-IST = pytz.timezone("Asia/Kolkata")
+
+# ---------- UTILITIES ----------
 
 def ist_now():
-    return datetime.now(IST)
+    return datetime.now(pytz.timezone("Asia/Kolkata"))
+
 
 def fmt(dt):
     return dt.strftime("%d %B %Y, %H:%M IST")
 
-# ---------------- ENV ----------------
-def env(key):
-    val = os.getenv(key)
-    if not val:
-        raise HTTPException(status_code=500, detail=f"Missing ENV: {key}")
-    return val
 
-# ---------------- SMART API (SAFE LOAD) ----------------
-def get_smart_connection():
-    try:
-        # Import INSIDE function (critical)
-        from SmartApi import SmartConnect  
-
-        api_key = env("SMART_API_KEY")
-        client = env("SMART_CLIENT_ID")
-        password = env("SMART_PASSWORD")
-        totp_secret = env("SMART_TOTP")
-
-        smart = SmartConnect(api_key=api_key)
-        otp = pyotp.TOTP(totp_secret).now()
-
-        session = smart.generateSession(client, password, otp)
-        if not session.get("status"):
-            raise Exception("SmartAPI session failed")
-
-        return smart
-
-    except ImportError:
-        raise HTTPException(
-            status_code=500,
-            detail="SmartAPI library not installed correctly"
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# ---------------- CORE LOGIC ----------------
 def probabilities(vix):
-    if vix >= 16:
-        return 25, 45, 15, 35
-    elif vix <= 13:
-        return 45, 25, 15, 30
+    if vix >= 18:
+        return 45, 40, 15, 40
+    elif vix >= 14:
+        return 40, 35, 25, 30
     else:
-        return 30, 30, 25, 30
+        return 35, 30, 35, 20
 
-def summary(vix):
-    if vix >= 16:
+
+def actionable_summary(vix):
+    if vix >= 18:
         return (
-            "Actionable Summary:\n"
-            "Bearish bias with elevated volatility.\n\n"
-            "Trade Plan:\n"
-            "• Buy near ATM PUT only\n"
-            "• Avoid CALL buying\n\n"
-            "Risk:\n"
-            "• Short covering possible\n"
-            "• Use strict stop-loss"
+            "High volatility expected at open.\n"
+            "• Prefer ATM Put buying on breakdown.\n"
+            "• Avoid Call buying unless strong opening range breakout.\n"
+            "• Expect fast premium expansion — strict stop-loss mandatory.\n"
+            "• Suitable only for experienced intraday traders."
         )
-    elif vix <= 13:
+    elif vix >= 14:
         return (
-            "Actionable Summary:\n"
-            "Bullish bias with controlled volatility.\n\n"
-            "Trade Plan:\n"
-            "• Buy near ATM CALL only\n"
-            "• Avoid PUT buying"
+            "Moderate volatility expected.\n"
+            "• Directional trades possible after confirmation.\n"
+            "• ATM options preferred over OTM.\n"
+            "• Avoid overtrading — wait for clean structure."
         )
     else:
         return (
-            "Actionable Summary:\n"
-            "No clear edge.\n"
-            "Avoid aggressive trades."
+            "Low volatility environment.\n"
+            "• Directional option buying not advised.\n"
+            "• Premium decay likely.\n"
+            "• Better to avoid 9:30 trade today."
         )
 
-# ---------------- ROUTES ----------------
+
+# ---------- SMART API ----------
+
+def get_smart():
+    api_key = os.getenv("SMART_API_KEY")
+    client_id = os.getenv("SMART_CLIENT_ID")
+    password = os.getenv("SMART_PASSWORD")
+    totp_secret = os.getenv("SMART_TOTP")
+
+    smart = SmartConnect(api_key=api_key)
+
+    otp = pyotp.TOTP(totp_secret).now()
+
+    data = smart.generateSession(client_id, password, otp)
+
+    if not data.get("status"):
+        raise Exception("SmartAPI login failed")
+
+    return smart
+
+
+# ---------- ROUTES ----------
+
 @app.get("/")
 def health():
     return {"status": "API running"}
 
+
 @app.get("/nifty-930")
 def nifty_930():
     try:
-        smart = get_smart_connection()
+        smart = get_smart()
 
         nifty = smart.ltpData("NSE", "NIFTY", "26000")
         vix = smart.ltpData("NSE", "INDIAVIX", "26009")
+
+        if not nifty.get("data") or not vix.get("data"):
+            raise Exception("Live market data unavailable")
 
         ltp = float(nifty["data"]["ltp"])
         vix_val = float(vix["data"]["ltp"])
@@ -119,9 +112,23 @@ def nifty_930():
             "downside": down,
             "flat": flat,
             "volatility": vol,
-            "summary": summary(vix_val),
+            "summary": actionable_summary(vix_val),
             "generated_at": fmt(ist_now())
         }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "reference": None,
+            "upside": None,
+            "downside": None,
+            "flat": None,
+            "volatility": None,
+            "summary": (
+                "Live data could not be fetched.\n"
+                "• SmartAPI credentials may be invalid\n"
+                "• Market may be closed\n"
+                "• Please retry after some time"
+            ),
+            "generated_at": fmt(ist_now()),
+            "error": str(e)
+        }
